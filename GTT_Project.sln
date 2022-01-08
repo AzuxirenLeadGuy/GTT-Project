@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30114.105
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{AB5003E9-28FE-4930-B552-FE9B9392C9A1}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GTT", "src\GTT\GTT.csproj", "{52C4B383-EA7A-4111-AA45-6B787DD353D6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GTT.GL", "src\GTT.GL\GTT.GL.csproj", "{588C6412-AF1E-4E4A-AB39-2001B07AF9D2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{52C4B383-EA7A-4111-AA45-6B787DD353D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52C4B383-EA7A-4111-AA45-6B787DD353D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52C4B383-EA7A-4111-AA45-6B787DD353D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52C4B383-EA7A-4111-AA45-6B787DD353D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{588C6412-AF1E-4E4A-AB39-2001B07AF9D2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{588C6412-AF1E-4E4A-AB39-2001B07AF9D2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{588C6412-AF1E-4E4A-AB39-2001B07AF9D2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{588C6412-AF1E-4E4A-AB39-2001B07AF9D2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{52C4B383-EA7A-4111-AA45-6B787DD353D6} = {AB5003E9-28FE-4930-B552-FE9B9392C9A1}
+		{588C6412-AF1E-4E4A-AB39-2001B07AF9D2} = {AB5003E9-28FE-4930-B552-FE9B9392C9A1}
+	EndGlobalSection
+EndGlobal
