@@ -12,7 +12,6 @@ namespace GTT
 		private readonly static IInputManager input = GameApp.CurrentGame.input;
 		private TextBox box;
 		private Color backcolor;
-
 		public override bool InputPressed 
 		{ 
 			get => bounds.Contains(input.PointerLocation) && input.Clicked; 
@@ -23,7 +22,6 @@ namespace GTT
 			get => bounds.Contains(input.PointerLocation); 
 			set { } 
 		}
-
 		public Button(Rectangle bounds, string Message = "", bool EnableAtStart = true) : base(bounds, Message, EnableAtStart)
 		{
 			box = new TextBox(bounds, Message, font, Color.White);
@@ -35,7 +33,7 @@ namespace GTT
 			{
 				case ComponentState.UnSelected: backcolor = Color.Black; break;
 				case ComponentState.Press: backcolor = Color.White; break;
-				case ComponentState.Selected: backcolor=Color.Yellow; break;
+				case ComponentState.Selected: backcolor=Color.Silver; break;
 				case ComponentState.Release: backcolor = Color.Silver; break;
 				case ComponentState.Disabled:
 					backcolor = Color.DarkRed;
