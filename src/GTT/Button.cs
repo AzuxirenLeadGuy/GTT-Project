@@ -8,8 +8,8 @@ namespace GTT
 	{
 		private readonly static Texture2D patch = GameApp.CurrentGame.patch;
 		private readonly static SpriteBatch batch = GameApp.CurrentGame._spriteBatch;
-		private readonly static SpriteFont font = GameApp.CurrentGame.font;
 		private readonly static IInputManager input = GameApp.CurrentGame.input;
+		private readonly static SpriteFont font = GameApp.CurrentGame.font;
 		private TextBox box;
 		private Color backcolor;
 		public override bool InputPressed 
