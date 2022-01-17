@@ -13,6 +13,7 @@ namespace GTT
 		private Button _exitButton;
 		internal SpriteBatch batch;
 		internal Texture2D patch;
+		internal MovableObject o1, o2, o3;
 		public void LoadContent()
 		{
 			batch = GameApp.CurrentGame._spriteBatch;
@@ -24,13 +25,26 @@ namespace GTT
 			Global.SetCenter(ref x, bound);
 			_exitButton = new Button(x, "Exit");
 			_exitButton.OnRelease += (o, e) => GameApp.CurrentGame.Exit();
+			o1.LoadContent();
+			o2.LoadContent();
+			o2.Place(new Point(0, 100));
+			o2._color = Color.Blue;
+			o3.LoadContent();
+			o3.Place(new Point(100, 0));
+			o3._color = Color.Green;
 		}
 		public void Update(GameTime gt)
 		{
+			o1.Update();
+			o2.Update();
+			o3.Update();
 			_exitButton.Update(gt);
 		}
 		public void Draw(GameTime gt)
 		{
+			o1.Draw();
+			o2.Draw();
+			o3.Draw();
 			_exitButton.Draw(gt);
 		}
 	}
