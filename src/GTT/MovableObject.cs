@@ -9,6 +9,9 @@ namespace GTT
 		private readonly static Texture2D patch = GameApp.CurrentGame.patch;
 		private readonly static SpriteBatch batch = GameApp.CurrentGame._spriteBatch;
 		private readonly static IInputManager input = GameApp.CurrentGame.input;
+		internal static byte TotalElements = 0;
+		internal static byte CurrentlyLocked = 0;
+		private byte _id;
 		private State _state;
 		private Rectangle _box;
 		internal Color _color;
@@ -17,6 +20,7 @@ namespace GTT
 			_box = new Rectangle(20, 20, 20, 20);
 			_color = Color.White;
 			_state = State.Unselected;
+			_id = ++TotalElements;
 		}
 		public void Update()
 		{
@@ -27,10 +31,18 @@ namespace GTT
 					break;
 				case State.Selected:
 					if (!_box.Contains(input.PointerLocation)) _state = State.Unselected;
-					else if (input.Clicked) _state = State.Hold;
+					else if (input.Clicked && CurrentlyLocked == 0)
+					{
+						_state = State.Hold;
+						CurrentlyLocked = _id;
+					}
 					break;
 				case State.Hold:
-					if (!input.Clicked) _state = State.Selected;
+					if (!input.Clicked)
+					{
+						_state = State.Selected;
+						CurrentlyLocked = 0;
+					}
 					else Place(input.PointerLocation);
 					break;
 			}
