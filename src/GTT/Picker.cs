@@ -51,7 +51,7 @@ namespace GTT
 			int w_20 = bds.Width / 5;
 			(_next.bounds.X, _next.bounds.Y, _next.bounds.Width, _next.bounds.Height) = (bds.X + 4 * w_20, bds.Y, w_20, bds.Height);
 			(_prev.bounds.X, _prev.bounds.Y, _prev.bounds.Width, _prev.bounds.Height) = (bds.X, bds.Y, w_20, bds.Height);
-			_textbox.SetBounds(new Rectangle(bds.X + w_20, bds.Y, 3 * w_20, bds.Height));
+			_textbox.Bounds = new Rectangle(bds.X + w_20, bds.Y, 3 * w_20, bds.Height);
 		}
 		public void LoadContent()
 		{

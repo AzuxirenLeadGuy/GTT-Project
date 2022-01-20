@@ -1,0 +1,3 @@
+[submodule "src/Azuxiren.MG"]
+	path = src/Azuxiren.MG
+	url = git@github.com:AzuxirenLeadGuy/Azuxiren.MG.git
