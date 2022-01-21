@@ -42,9 +42,9 @@ namespace GTT
 		}
 		public void Draw(GameTime gt)
 		{
-			o1.Draw();
-			o2.Draw();
 			o3.Draw();
+			o2.Draw();
+			o1.Draw();
 			_exitButton.Draw(gt);
 		}
 	}
