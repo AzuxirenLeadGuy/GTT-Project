@@ -1,0 +1,2 @@
+GraphAlgos will cover pass-by-pass configuration of these 5 algorithms
+1. DFS: <SearchFor: Vertex>(May or may not be present in the graph), <Pred: Vertex[]>, <Visited[]: byte/state>
