@@ -2,3 +2,4 @@ GraphAlgos will cover pass-by-pass configuration of these 5 algorithms
 1. DFS: <SearchFor: Vertex>(May or may not be present in the graph), <Pred: Vertex[]>, <Visited[]: byte/state>
 2. BFS: Same as DFS
 3. Dijkstra Algorithm: <SearchFor: Vertex>(May or may not be present in the graph), <Pred: Vertex[]>, <Visited[]: byte/state>, <PathHeap: SortedSet<(Vertex:byte, Distance:int)>>
+4. Floyd-Warshall Algorithm: <Vertex_Dist_Matrix: int[,]>
