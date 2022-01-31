@@ -3,47 +3,54 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace GTT
 {
+	public class MovableObjectManager
+	{
+		internal byte TotalElements = 0;
+		internal byte CurrentlyLocked = 0;
+		internal Rectangle Region;
+	}
 	public struct MovableObject
 	{
 		private enum State { Unselected, Selected, Hold }
-		private readonly static Texture2D patch = GameApp.CurrentGame.patch;
-		private readonly static SpriteBatch batch = GameApp.CurrentGame._spriteBatch;
-		private readonly static IInputManager input = GameApp.CurrentGame.input;
-		internal static byte TotalElements = 0;
-		internal static byte CurrentlyLocked = 0;
-		private byte _id;
+		private readonly static Texture2D Patch = GameApp.CurrentGame.Patch;
+		private readonly static SpriteBatch Batch = GameApp.CurrentGame.SpriteBatch;
+		private readonly static IInputManager Input = GameApp.CurrentGame.Input;
+		public readonly MovableObjectManager Manager;
+		private readonly byte _id;
 		private State _state;
 		private Rectangle _box;
-		internal Color _color;
-		public void LoadContent()
+		public Color Color;
+		public MovableObject(MovableObjectManager mgr, Rectangle bds, Color color)
 		{
-			_box = new Rectangle(20, 20, 20, 20);
-			_color = Color.White;
-			_state = State.Unselected;
-			_id = ++TotalElements;
+			Manager = mgr;
+			_box = bds;
+			Color = color;
+			_id = ++Manager.TotalElements;
+			_state = State.Selected;
 		}
 		public void Update()
 		{
 			switch (_state)
 			{
 				case State.Unselected:
-					if (_box.Contains(input.PointerLocation)) _state = State.Selected;
+					if (_box.Contains(Input.PointerLocation)) _state = State.Selected;
 					break;
 				case State.Selected:
-					if (!_box.Contains(input.PointerLocation)) _state = State.Unselected;
-					else if (input.Clicked && CurrentlyLocked == 0)
+					if (!_box.Contains(Input.PointerLocation)) _state = State.Unselected;
+					else if (Input.Clicked && Manager.CurrentlyLocked == 0)
 					{
 						_state = State.Hold;
-						CurrentlyLocked = _id;
+						Manager.CurrentlyLocked = _id;
 					}
 					break;
 				case State.Hold:
-					if (!input.Clicked)
+					if (Input.Clicked && Manager.Region.Contains(Input.PointerLocation))
+						Place(Input.PointerLocation);
+					else
 					{
 						_state = State.Selected;
-						CurrentlyLocked = 0;
+						Manager.CurrentlyLocked = 0;
 					}
-					else Place(input.PointerLocation);
 					break;
 			}
 		}
@@ -54,7 +61,7 @@ namespace GTT
 		}
 		public void Draw()
 		{
-			batch.Draw(patch, _box, _color);
+			Batch.Draw(Patch, _box, Color);
 		}
 	}
 }
