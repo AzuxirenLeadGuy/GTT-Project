@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-namespace GraphAlgos
+﻿namespace GraphAlgos
 {
 	/// <summary>
 	/// Represents a Graph abstract structure
@@ -20,9 +19,8 @@ namespace GraphAlgos
 		/// Denotes the number of vertices in the graph
 		/// </summary>
 		/// <value>byte</value>
-		public byte VerticesCount => _vc;
-		private readonly byte _vc;
-		private readonly byte[,] AdjMat;
+		public readonly byte VerticesCount;
+		private readonly byte[,] _adjMat;
 		/// <summary>
 		/// Creates a graph
 		/// </summary>
@@ -31,10 +29,10 @@ namespace GraphAlgos
 		/// <param name="directed">If graph should be directed</param>
 		public Graph(byte vertices, bool weighted, bool directed)
 		{
-			_vc = vertices;
+			VerticesCount = vertices;
 			Weighted = weighted;
 			Directed = directed;
-			AdjMat = new byte[_vc, _vc];
+			_adjMat = new byte[VerticesCount, VerticesCount];
 		}
 		/// <summary>
 		/// Returns the weight of edge between the two vertices
@@ -42,8 +40,8 @@ namespace GraphAlgos
 		/// <param name="p">Vertex of the graph</param>
 		/// <param name="q">Vertex of the graph</param>
 		/// <returns>Weight of the edge</returns>
-		internal byte GetWeight(byte p, byte q) => AdjMat[p, q];
-		private void Set(byte p, byte q, byte weight) => AdjMat[p, q] = weight;
+		internal byte GetWeight(byte p, byte q) => _adjMat[p, q];
+		private void Set(byte p, byte q, byte weight) => _adjMat[p, q] = weight;
 		/// <summary>
 		/// Sets weight for a given edge
 		/// </summary>
@@ -56,7 +54,7 @@ namespace GraphAlgos
 		/// <returns></returns>
 		public bool SetWeight(byte p, byte q, byte weight)
 		{
-			if (p >= _vc || q >= _vc) return false;
+			if (p >= VerticesCount || q >= VerticesCount) return false;
 			if (!Weighted && weight != 0) weight = 1;
 			Set(p, q, weight);
 			if (!Directed) Set(q, p, weight);
@@ -69,7 +67,7 @@ namespace GraphAlgos
 		/// <param name="q">Vertex of the graph</param>
 		/// <returns>Returns true if the vertices are adjacent,
 		/// otherwise false</returns>
-		internal bool Adjacent(byte p, byte q) => p < _vc && q < _vc && AdjMat[p, q] != 0;
+		internal bool Adjacent(byte p, byte q) => p < VerticesCount && q < VerticesCount && _adjMat[p, q] != 0;
 		/// <summary>
 		/// Iterates all the neigbours of a given vertex 
 		/// </summary>
@@ -82,14 +80,14 @@ namespace GraphAlgos
 		{
 			if (outgoing)
 			{
-				for (byte i = 0; i < _vc; i++)
+				for (byte i = 0; i < VerticesCount; i++)
 				{
 					if (Adjacent(v, i)) yield return i;
 				}
 			}
 			else
 			{
-				for (byte i = 0; i < _vc; i++)
+				for (byte i = 0; i < VerticesCount; i++)
 				{
 					if (Adjacent(i, v)) yield return i;
 				}
