@@ -1,44 +1,46 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Azuxiren.MG;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Azuxiren.MG;
 namespace GTT
 {
 	public class GameApp : AMGC<WelcomeScreen, LoadingScreen>
 	{
 		internal static GameApp CurrentGame;
 		internal Color ClearColor = Color.DarkGray;
-		internal SpriteBatch _spriteBatch;
-		internal Texture2D patch, triangle, circle;
-		internal SpriteFont font;
-		internal IInputManager input;
+		internal SpriteBatch SpriteBatch;
+		internal Texture2D Patch, Triangle, Circle;
+		internal SpriteFont Font;
+		internal IInputManager Input;
+		internal int UnitLength;
 		public GameApp(IInputManager inputManager)
 		{
 			Content.RootDirectory = "Content";
 			IsMouseVisible = true;
-			input = inputManager;
+			Input = inputManager;
 			CurrentGame = this;
 		}
 		protected override void LoadContent()
 		{
-			_spriteBatch = new SpriteBatch(GraphicsDevice);
-			patch = new Texture2D(GraphicsDevice, 1, 1);
-			patch.SetData(new Color[] { Color.White });
-			triangle = Content.Load<Texture2D>("triangle");
-			circle = Content.Load<Texture2D>("circle");
-			font = Content.Load<SpriteFont>("font");
+			UnitLength = Window.ClientBounds.Height >> 5;
+			SpriteBatch = new SpriteBatch(GraphicsDevice);
+			Patch = new Texture2D(GraphicsDevice, 1, 1);
+			Patch.SetData(new Color[] { Color.White });
+			Triangle = Content.Load<Texture2D>("triangle");
+			Circle = Content.Load<Texture2D>("circle");
+			Font = Content.Load<SpriteFont>("font");
 			SetFullScreen();
 			base.LoadContent();
 		}
 		protected override void Draw(GameTime gt)
 		{
 			GraphicsDevice.Clear(ClearColor);
-			_spriteBatch.Begin();
+			SpriteBatch.Begin();
 			base.Draw(gt);
-			_spriteBatch.End();
+			SpriteBatch.End();
 		}
 		protected override void Update(GameTime gameTime)
 		{
-			input.Update();
+			Input.Update();
 			base.Update(gameTime);
 		}
 	}
