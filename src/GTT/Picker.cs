@@ -1,18 +1,20 @@
 using System;
+
 using Azuxiren.MG;
 using Azuxiren.MG.Menu;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace GTT
 {
-	public class Picker
+	public class Picker : IMenuItem
 	{
-		private readonly static SpriteBatch batch = GameApp.CurrentGame._spriteBatch;
+		private readonly static SpriteBatch Batch = GameApp.CurrentGame.SpriteBatch;
 		private readonly Button _next, _prev;
 		private TextBox _textbox;
 		private readonly string[] _choices;
-		internal byte _index;
+		private byte _index;
 		private readonly byte _limit;
 		public class SelectArgs : EventArgs
 		{
@@ -25,7 +27,7 @@ namespace GTT
 			int w_20 = bds.Width / 5;
 			_next = new Button(new Rectangle(bds.X + 4 * w_20, bds.Y, w_20, bds.Height), ">");
 			_prev = new Button(new Rectangle(bds.X, bds.Y, w_20, bds.Height), "<");
-			_textbox = new TextBox(new Rectangle(bds.X + w_20, bds.Y, 3 * w_20, bds.Height), _choices[0], GameApp.CurrentGame.font)
+			_textbox = new TextBox(new Rectangle(bds.X + w_20, bds.Y, 3 * w_20, bds.Height), _choices[0], GameApp.CurrentGame.Font)
 			{
 				Alignment = Alignment.Centered
 			};
@@ -49,8 +51,8 @@ namespace GTT
 		public void Set(Rectangle bds)
 		{
 			int w_20 = bds.Width / 5;
-			(_next.bounds.X, _next.bounds.Y, _next.bounds.Width, _next.bounds.Height) = (bds.X + 4 * w_20, bds.Y, w_20, bds.Height);
-			(_prev.bounds.X, _prev.bounds.Y, _prev.bounds.Width, _prev.bounds.Height) = (bds.X, bds.Y, w_20, bds.Height);
+			(_next.Bounds.X, _next.Bounds.Y, _next.Bounds.Width, _next.Bounds.Height) = (bds.X + 4 * w_20, bds.Y, w_20, bds.Height);
+			(_prev.Bounds.X, _prev.Bounds.Y, _prev.Bounds.Width, _prev.Bounds.Height) = (bds.X, bds.Y, w_20, bds.Height);
 			_textbox.Bounds = new Rectangle(bds.X + w_20, bds.Y, 3 * w_20, bds.Height);
 		}
 		public void LoadContent()
@@ -69,7 +71,7 @@ namespace GTT
 		{
 			_next.Draw(gt);
 			_prev.Draw(gt);
-			_textbox.Draw(batch);
+			_textbox.Draw(Batch);
 		}
 	}
 }
