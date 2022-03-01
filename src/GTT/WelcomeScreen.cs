@@ -16,6 +16,13 @@ namespace GTT
 		internal readonly SpriteBatch Batch = GameApp.CurrentGame.SpriteBatch;
 		internal readonly Texture2D Patch = GameApp.CurrentGame.Patch;
 		internal MovableObject O1, O2, O3;
+		public WelcomeScreen()
+		{
+			Batch = GameApp.CurrentGame.SpriteBatch;
+			Patch = GameApp.CurrentGame.Patch;
+			_state = State.Welcome;
+			_exitButton = default;
+		}
 		public void LoadContent()
 		{
 			var bound = GameApp.CurrentGame.Window.ClientBounds;
