@@ -7,7 +7,7 @@ Group member(s)
 
 ## Application summary
 
-This project will be provide visual demonstration of 5 graph theory algorithms. A user can use to create a custom graph and see the visualized workings of the following algorithms on their custom graph:
+This project will be provide visual demonstration of 5 graph theory algorithms. A user can use to create a user defined simple/directed graph and see the visualized workings of the following algorithms on their custom graph:
 
 - [Depth First Search](https://en.wikipedia.org/wiki/Depth-first_search): Provide a pass-by-pass view of Depth first search in a graph.
 - [Breadth First Search](https://en.wikipedia.org/wiki/Breadth-first_search): Provide a pass-by-pass view of Breadth first search in a graph.
