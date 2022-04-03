@@ -7,7 +7,7 @@ Group member(s)
 
 ## Application summary
 
-This project will be provide visual demonstration of 5 graph theory algorithms. A user can use to create a custom graph and see the visualized workings of the following algorithms on their custom graph:
+This project will be provide visual demonstration of 5 graph theory algorithms. A user can use to create a custom graph (with less than 20 vertices, but edges are only limited by the number of vertices), move the vertices manually to arrange the graph, choose to keep the graph directed or undirected, and edit the edges in the graph. After creating the graph, the user can then see the visualized workings of the following algorithms on their custom graph:
 
 - [Depth First Search](https://en.wikipedia.org/wiki/Depth-first_search): Provide a pass-by-pass view of Depth first search in a graph.
 - [Breadth First Search](https://en.wikipedia.org/wiki/Breadth-first_search): Provide a pass-by-pass view of Breadth first search in a graph.
@@ -18,3 +18,5 @@ This project will be provide visual demonstration of 5 graph theory algorithms. 
 ## Development details:
 
 This project will be using OpenGL bindings provided by the [Monogame framework](https://monogame.net). Monogame is a game engine/framework for creating simple games in C#. These games can be ported to all platforms, including Windows, Mac, Linux.
+
+The project will be developed using C#, with [.NET SDK 6](https://dotnet.microsoft.com/en-us/download) which supports development with C# in Windows, Mac and Linux.
