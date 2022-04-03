@@ -14,6 +14,7 @@ namespace GTT
 		private TextBox _textbox;
 		private readonly string[] _choices;
 		private byte _index;
+		public byte Index => _index;
 		private readonly byte _limit;
 		public class SelectArgs : EventArgs
 		{

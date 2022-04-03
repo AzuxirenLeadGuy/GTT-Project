@@ -1,3 +1,5 @@
+using Azuxiren.MG;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -12,18 +14,17 @@ namespace GTT
 	public struct MovableObject
 	{
 		private enum State { Unselected, Selected, Hold }
-		private readonly static Texture2D Patch = GameApp.CommonData.Patch;
-		private readonly static SpriteBatch Batch = GameApp.CommonData.Batch;
-		private readonly static IInputManager Input = GameApp.CommonData.Input;
 		public readonly MovableObjectManager Manager;
 		private readonly byte _id;
 		private State _state;
 		private Rectangle _box;
+		private TextBox _textBox;
 		public Color Color;
-		public MovableObject(MovableObjectManager mgr, Rectangle bds, Color color)
+		public MovableObject(MovableObjectManager mgr, string text, Rectangle bds, Color color)
 		{
 			Manager = mgr;
 			_box = bds;
+			_textBox = new TextBox(bds, text, GameApp.CommonData.Font, Color.Black);
 			Color = color;
 			_id = ++Manager.TotalElements;
 			_state = State.Selected;
@@ -33,19 +34,21 @@ namespace GTT
 			switch (_state)
 			{
 				case State.Unselected:
-					if (_box.Contains(Input.PointerLocation)) _state = State.Selected;
+					if (_box.Contains(GameApp.CommonData.Input.PointerLocation)) _state = State.Selected;
 					break;
 				case State.Selected:
-					if (!_box.Contains(Input.PointerLocation)) _state = State.Unselected;
-					else if (Input.Clicked && Manager.CurrentlyLocked == 0)
+					if (!_box.Contains(GameApp.CommonData.Input.PointerLocation)) _state = State.Unselected;
+					else if (GameApp.CommonData.Input.Clicked && Manager.CurrentlyLocked == 0)
 					{
 						_state = State.Hold;
 						Manager.CurrentlyLocked = _id;
 					}
 					break;
 				case State.Hold:
-					if (Input.Clicked && Manager.Region.Contains(Input.PointerLocation))
-						Place(Input.PointerLocation);
+					if (GameApp.CommonData.Input.Clicked && Manager.Region.Contains(GameApp.CommonData.Input.PointerLocation))
+					{
+						Place(GameApp.CommonData.Input.PointerLocation);
+					}
 					else
 					{
 						_state = State.Selected;
@@ -56,12 +59,13 @@ namespace GTT
 		}
 		public void Place(Point p)
 		{
-			_box.X = p.X;
-			_box.Y = p.Y;
+			Global.SetCenter(ref _box, p);
+			_textBox.Bounds = _box;
 		}
 		public void Draw()
 		{
-			Batch.Draw(Patch, _box, Color);
+			GameApp.CommonData.Batch.Draw(GameApp.CommonData.Patch, _box, Color);
+			_textBox.Draw(GameApp.CommonData.Batch);
 		}
 	}
 }
