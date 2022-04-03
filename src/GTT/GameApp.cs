@@ -10,12 +10,13 @@ namespace GTT
 		public GameApp(IInputManager inputManager)
 		{
 			Content.RootDirectory = "Content";
-			CommonData.ClearColor = Color.DarkGray;
+			CommonData.ClearColor = Color.LightGray;
 			IsMouseVisible = true;
 			CommonData.Input = inputManager;
 		}
 		protected override void LoadContent()
 		{
+			SetFullScreen();
 			CommonData.Font = Content.Load<SpriteFont>("font");
 			CommonData.FormalFont = Content.Load<SpriteFont>("ffont");
 			CommonData.Batch = new SpriteBatch(GraphicsDevice);
@@ -24,9 +25,8 @@ namespace GTT
 			CommonData.Triangle = Content.Load<Texture2D>("triangle");
 			CommonData.Circle = Content.Load<Texture2D>("circle");
 			Rectangle screen = Window.ClientBounds;
-			CommonData.GameScreen = new(0, 0, screen.Width, screen.Height);
 			CommonData.CurrentApp = this;
-			SetFullScreen();
+			CommonData.GameScreen = new(0, 0, screen.Width, screen.Height);
 			base.LoadContent();
 		}
 		protected override void Draw(GameTime gt)
