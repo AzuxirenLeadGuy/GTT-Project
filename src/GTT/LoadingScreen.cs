@@ -1,4 +1,5 @@
 using Azuxiren.MG;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -6,12 +7,12 @@ namespace GTT
 {
 	public struct LoadingScreen : IScreen
 	{
-		internal SpriteBatch batch;
-		internal Texture2D patch;
+		internal SpriteBatch Batch;
+		internal Texture2D Patch;
 		public void LoadContent()
 		{
-			batch = GameApp.CurrentGame._spriteBatch;
-			patch = GameApp.CurrentGame.patch;
+			Batch = GameApp.CommonData.Batch;
+			Patch = GameApp.CommonData.Patch;
 		}
 		public void Update(GameTime gt)
 		{

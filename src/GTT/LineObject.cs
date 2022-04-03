@@ -7,8 +7,8 @@ namespace GTT
 	public class LineObject
 	{
 		protected readonly static Vector2 Origin = new(0f, 0.5f);
-		protected readonly static Texture2D Tex = GameApp.CurrentGame.Patch;
-		protected readonly static Texture2D Head = GameApp.CurrentGame.Triangle;
+		protected readonly static Texture2D Tex = GameApp.CommonData.Patch;
+		protected readonly static Texture2D Head = GameApp.CommonData.Triangle;
 		protected readonly static Vector2 Arrowcenter = new(Head.Width / 2, Head.Height - 1);
 		private Vector2 _point1, _scale;
 		private Rectangle _arrow;

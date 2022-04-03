@@ -1,4 +1,5 @@
 ﻿using Azuxiren.MG;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 namespace GTT
@@ -22,6 +23,9 @@ namespace GTT
 			CommonData.Patch.SetData(new Color[] { Color.White });
 			CommonData.Triangle = Content.Load<Texture2D>("triangle");
 			CommonData.Circle = Content.Load<Texture2D>("circle");
+			Rectangle screen = Window.ClientBounds;
+			CommonData.GameScreen = new(0, 0, screen.Width, screen.Height);
+			CommonData.CurrentApp = this;
 			SetFullScreen();
 			base.LoadContent();
 		}

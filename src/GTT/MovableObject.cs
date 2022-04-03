@@ -12,9 +12,9 @@ namespace GTT
 	public struct MovableObject
 	{
 		private enum State { Unselected, Selected, Hold }
-		private readonly static Texture2D Patch = GameApp.CurrentGame.Patch;
-		private readonly static SpriteBatch Batch = GameApp.CurrentGame.SpriteBatch;
-		private readonly static IInputManager Input = GameApp.CurrentGame.Input;
+		private readonly static Texture2D Patch = GameApp.CommonData.Patch;
+		private readonly static SpriteBatch Batch = GameApp.CommonData.Batch;
+		private readonly static IInputManager Input = GameApp.CommonData.Input;
 		public readonly MovableObjectManager Manager;
 		private readonly byte _id;
 		private State _state;
