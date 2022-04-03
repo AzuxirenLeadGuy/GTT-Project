@@ -5,42 +5,36 @@ namespace GTT
 {
 	public class GameApp : AMGC<WelcomeScreen, LoadingScreen>
 	{
-		internal static GameApp CurrentGame;
-		internal Color ClearColor = Color.DarkGray;
-		internal SpriteBatch SpriteBatch;
-		internal Texture2D Patch, Triangle, Circle;
-		internal SpriteFont Font;
-		internal IInputManager Input;
-		internal int UnitLength;
+		internal static CommonDataStruct CommonData = new();
 		public GameApp(IInputManager inputManager)
 		{
 			Content.RootDirectory = "Content";
+			CommonData.ClearColor = Color.DarkGray;
 			IsMouseVisible = true;
-			Input = inputManager;
-			CurrentGame = this;
+			CommonData.Input = inputManager;
 		}
 		protected override void LoadContent()
 		{
-			UnitLength = Window.ClientBounds.Height >> 5;
-			SpriteBatch = new SpriteBatch(GraphicsDevice);
-			Patch = new Texture2D(GraphicsDevice, 1, 1);
-			Patch.SetData(new Color[] { Color.White });
-			Triangle = Content.Load<Texture2D>("triangle");
-			Circle = Content.Load<Texture2D>("circle");
-			Font = Content.Load<SpriteFont>("font");
+			CommonData.Font = Content.Load<SpriteFont>("font");
+			CommonData.FormalFont = Content.Load<SpriteFont>("ffont");
+			CommonData.Batch = new SpriteBatch(GraphicsDevice);
+			CommonData.Patch = new Texture2D(GraphicsDevice, 1, 1);
+			CommonData.Patch.SetData(new Color[] { Color.White });
+			CommonData.Triangle = Content.Load<Texture2D>("triangle");
+			CommonData.Circle = Content.Load<Texture2D>("circle");
 			SetFullScreen();
 			base.LoadContent();
 		}
 		protected override void Draw(GameTime gt)
 		{
-			GraphicsDevice.Clear(ClearColor);
-			SpriteBatch.Begin();
+			GraphicsDevice.Clear(CommonData.ClearColor);
+			CommonData.Batch.Begin();
 			base.Draw(gt);
-			SpriteBatch.End();
+			CommonData.Batch.End();
 		}
 		protected override void Update(GameTime gameTime)
 		{
-			Input.Update();
+			CommonData.Input.Update();
 			base.Update(gameTime);
 		}
 	}

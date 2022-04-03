@@ -1,33 +1,26 @@
 using Azuxiren.MG;
 using Azuxiren.MG.Menu;
-
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 namespace GTT
 {
 	public class Button : AbstractButton, IMenuItem
 	{
-		private readonly static Texture2D Patch = GameApp.CurrentGame.Patch;
-		private readonly static SpriteBatch Batch = GameApp.CurrentGame.SpriteBatch;
-		private readonly static IInputManager Input = GameApp.CurrentGame.Input;
-		private readonly static SpriteFont Font = GameApp.CurrentGame.Font;
 		private TextBox _box;
 		private Color _backcolor;
 		public override bool InputPressed
 		{
-			get => Bounds.Contains(Input.PointerLocation) && Input.Clicked;
+			get => Bounds.Contains(GameApp.CommonData.Input.PointerLocation) && GameApp.CommonData.Input.Clicked;
 			set { }
 		}
 		public override bool Selected
 		{
-			get => Bounds.Contains(Input.PointerLocation);
+			get => Bounds.Contains(GameApp.CommonData.Input.PointerLocation);
 			set { }
 		}
 		public Button(Rectangle bounds, string message = "", bool enableAtStart = true) : base(bounds, message, enableAtStart)
 		{
-			_box = new TextBox(bounds, message, Font, Color.White);
+			_box = new TextBox(bounds, message, GameApp.CommonData.Font, Color.White);
 		}
-		public override void LoadContent() { }
 		public override void Draw(GameTime gt)
 		{
 			switch (State)
@@ -40,8 +33,8 @@ namespace GTT
 					_backcolor = Color.DarkRed;
 					break;
 			}
-			Batch.Draw(Patch, Bounds, _backcolor);
-			_box.Draw(Batch);
+			GameApp.CommonData.Batch.Draw(GameApp.CommonData.Patch, Bounds, _backcolor);
+			_box.Draw(GameApp.CommonData.Batch);
 		}
 		public void Set(Rectangle bds)
 		{
