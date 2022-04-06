@@ -18,6 +18,7 @@ namespace GTT
 		private readonly byte _id;
 		private State _state;
 		private Rectangle _box;
+		public Rectangle Bounds=>_box;
 		private TextBox _textBox;
 		public Color Color;
 		public MovableObject(MovableObjectManager mgr, string text, Rectangle bds, Color color)

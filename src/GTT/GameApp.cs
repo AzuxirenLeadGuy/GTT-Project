@@ -26,7 +26,8 @@ namespace GTT
 			CommonData.Circle = Content.Load<Texture2D>("circle");
 			Rectangle screen = Window.ClientBounds;
 			CommonData.CurrentApp = this;
-			CommonData.GameScreen = new(0, 0, screen.Width, screen.Height);
+			CommonData.GraphDrawingBackColor = Color.LimeGreen;
+			CommonData.ScreenBounds = new(0, 0, screen.Width, screen.Height);
 			base.LoadContent();
 		}
 		protected override void Draw(GameTime gt)

@@ -1,10 +1,7 @@
 using System;
-
 using Azuxiren.MG;
 using Azuxiren.MG.Menu;
-
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace GTT
 {

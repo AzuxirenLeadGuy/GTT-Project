@@ -5,7 +5,8 @@ namespace GTT
 {
 	public struct CommonDataStruct
 	{
-		public Rectangle GameScreen;
+		public Rectangle ScreenBounds;
+		public Color GraphDrawingBackColor;
 		public Color ClearColor;
 		public SpriteBatch Batch;
 		public SpriteFont Font, FormalFont;
