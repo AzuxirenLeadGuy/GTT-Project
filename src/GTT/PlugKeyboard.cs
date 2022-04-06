@@ -51,10 +51,8 @@ namespace GTT
 				_numericPads[i].Update(gt);
 				if (_numericPads[i].State == ComponentState.Release)
 				{
-					System.Console.Write($"F({Value}, {i}) = ");
 					Value = (Value * 10) + i;
 					change = true;
-					System.Console.WriteLine($"{Value}");
 				}
 			}
 			_numericPads[10].Update(gt);
