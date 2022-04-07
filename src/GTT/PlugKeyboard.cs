@@ -49,15 +49,13 @@ namespace GTT
 			bool change = false;
 			for (int i = 0; i < 10; i++)
 			{
-				_numericPads[i].Update(gt);
-				if (_numericPads[i].State == ComponentState.Release)
+				if (_numericPads[i].ClickedOnUpdate(gt))
 				{
 					_value = (_value * 10) + i;
 					change = true;
 				}
 			}
-			_numericPads[10].Update(gt);
-			if (_numericPads[10].State == ComponentState.Release)
+			if (_numericPads[10].ClickedOnUpdate(gt))
 			{
 				_value = 0;
 				change = true;
