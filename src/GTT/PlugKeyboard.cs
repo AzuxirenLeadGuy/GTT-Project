@@ -8,7 +8,8 @@ namespace GTT
 	{
 		private TextBox _box;
 		private readonly Button[] _numericPads;
-		internal int Value;
+		private int _value;
+		public int Value { get => _value; set => _box.Text = (_value = value).ToString(); }
 		public PlugKeyboard(Rectangle bds, byte defaultValue = 0)
 		{
 			_numericPads = new Button[11];
@@ -17,8 +18,8 @@ namespace GTT
 				_numericPads[i] = new Button(Rectangle.Empty, i.ToString());
 			}
 			_numericPads[10] = new Button(Rectangle.Empty, "Clear");
-			Value = defaultValue;
-			_box = new TextBox(Rectangle.Empty, Value.ToString(), GameApp.CommonData.Font);
+			_value = defaultValue;
+			_box = new TextBox(Rectangle.Empty, _value.ToString(), GameApp.CommonData.Font);
 			Set(bds);
 		}
 		public void Set(Rectangle bds)
@@ -51,19 +52,19 @@ namespace GTT
 				_numericPads[i].Update(gt);
 				if (_numericPads[i].State == ComponentState.Release)
 				{
-					Value = (Value * 10) + i;
+					_value = (_value * 10) + i;
 					change = true;
 				}
 			}
 			_numericPads[10].Update(gt);
 			if (_numericPads[10].State == ComponentState.Release)
 			{
-				Value = 0;
+				_value = 0;
 				change = true;
 			}
 			if (change)
 			{
-				_box.Text = Value.ToString();
+				_box.Text = _value.ToString();
 			}
 		}
 	}

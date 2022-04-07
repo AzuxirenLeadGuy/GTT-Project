@@ -9,6 +9,7 @@ namespace GTT
 	public class Checkbox : AbstractButton, IMenuItem
 	{
 		protected bool _isChecked;
+		public bool IsChecked => _isChecked;
 		protected Rectangle _box, _tickmark;
 		protected TextBox _textBox;
 		public override bool InputPressed
