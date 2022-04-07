@@ -1,5 +1,6 @@
 using Azuxiren.MG;
 using Azuxiren.MG.Menu;
+
 using Microsoft.Xna.Framework;
 namespace GTT
 {
@@ -40,6 +41,19 @@ namespace GTT
 		{
 			Bounds = bds;
 			_box.Bounds = bds;
+		}
+		public bool ClickedOnUpdate(GameTime gt)
+		{
+			if (_state != ComponentState.Selected)
+			{
+				Update(gt);
+				return false;
+			}
+			else
+			{
+				Update(gt);
+				return _state == ComponentState.Press;
+			}
 		}
 	}
 }
