@@ -25,6 +25,7 @@ namespace GTT
 		private readonly Dictionary<(byte From, byte To), byte> _edgeMap;
 		public WelcomeScreen()
 		{
+			_nodeButtons = System.Array.Empty<Button>();
 			_edgelines = new();
 			_edgeMap = new();
 			_state = State.StartScreen;
@@ -144,6 +145,8 @@ namespace GTT
 						if (_add_edge.State == ComponentState.Release)
 						{
 							var key = (_nodeSel1, _nodeSel2);
+							if ((_directedbox.IsChecked == false) && (key._nodeSel1 > key._nodeSel2))
+								(key._nodeSel1, key._nodeSel2) = (key._nodeSel2, key._nodeSel1);
 							if (_edgeMap.ContainsKey(key))
 							{
 								if (_weightedbox.IsChecked == false || _keyboard.Value == 0)
@@ -180,7 +183,7 @@ namespace GTT
 								else
 								{
 									_edgeMap.Add(key, (byte)_keyboard.Value);
-									_edgelines.Add(key, new LineObject(_movableNodes[_nodeSel1].Bounds.Center, _movableNodes[_nodeSel2].Bounds.Center, 5));
+									_edgelines.Add(key, new LineObject(_movableNodes[_nodeSel1].Bounds.Center, _movableNodes[_nodeSel2].Bounds.Center, _directedbox.IsChecked, _weightedbox.IsChecked ? _keyboard.Value.ToString() : null, 5) { ArrowColor = Color.Yellow });
 									_actionlogText.Text = $"Edge is added to the graph.\n({(char)((byte)'a' + _nodeSel1)}, {(char)((byte)'a' + _nodeSel2)}) with weight {_keyboard.Value}";
 									_actionlogText.TextColor = Color.DarkGreen;
 								}
@@ -268,6 +271,10 @@ namespace GTT
 					break;
 				case State.SelectEdges:
 					GameApp.CommonData.Batch.Draw(GameApp.CommonData.Patch, _graphDragRegion, GameApp.CommonData.GraphDrawingBackColor);
+					foreach (var edge in _edgelines)
+					{
+						edge.Value.Draw(GameApp.CommonData.Batch);
+					}
 					for (i = 0; i < _nodeCount; i++)
 					{
 						_nodeButtons[i].Draw(gt);
@@ -277,10 +284,6 @@ namespace GTT
 						if (_weightedbox.IsChecked) _keyboard.Draw(gt);
 						_add_edge.Draw(gt);
 						_cancel_edge.Draw(gt);
-					}
-					foreach (var edge in _edgelines)
-					{
-						edge.Value.Draw(GameApp.CommonData.Batch, Color.Black);
 					}
 					_logText.Draw(GameApp.CommonData.Batch);
 					_actionlogText.Draw(GameApp.CommonData.Batch);
