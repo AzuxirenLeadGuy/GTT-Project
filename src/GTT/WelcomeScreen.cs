@@ -82,11 +82,6 @@ namespace GTT
 		public void Update(GameTime gt)
 		{
 			int i;
-			if (_state != State.StartScreen)
-			{
-				_backButton.Update(gt);
-				_submitNodes.Update(gt);
-			}
 			switch (_state)
 			{
 				case State.StartScreen:
@@ -109,8 +104,7 @@ namespace GTT
 				case State.SelectEdges:
 					for (i = 0; i < _nodeCount; i++)
 					{
-						_nodeButtons[i].Update(gt);
-						if (_nodeButtons[i].State == ComponentState.Release)
+						if (_nodeButtons[i].ClickedOnUpdate(gt))
 						{
 							if (_nodeSel1 == 255)
 								_nodeSel1 = (byte)i;
@@ -118,7 +112,7 @@ namespace GTT
 							{
 								_nodeSel2 = (byte)i;
 								if (_nodeSel2 == _nodeSel1) _nodeSel2 = 255;
-								else _keyboard.Value = 1;
+								else _keyboard.Value = _weightedbox.IsChecked ? 0 : 1;
 							}
 							else
 							{
@@ -140,9 +134,7 @@ namespace GTT
 						}
 						else
 							_logText.Text = $"Select OK to add edge ({(char)((byte)'a' + _nodeSel1)}, {(char)((byte)'a' + _nodeSel2)})      ";
-						_add_edge.Update(gt);
-						_cancel_edge.Update(gt);
-						if (_add_edge.State == ComponentState.Release)
+						if (_add_edge.ClickedOnUpdate(gt))
 						{
 							var key = (_nodeSel1, _nodeSel2);
 							if ((_directedbox.IsChecked == false) && (key._nodeSel1 > key._nodeSel2))
@@ -156,9 +148,14 @@ namespace GTT
 									_actionlogText.Text = $"Edge ({(char)((byte)'a' + _nodeSel1)}, {(char)((byte)'a' + _nodeSel2)}) is removed from the graph";
 									_actionlogText.TextColor = Color.DarkGreen;
 								}
-								else if (_keyboard.Value > 0 && _keyboard.Value <= 255)
+								else if (_keyboard.Value < 0 || _keyboard.Value <= 255)
 								{
 									_edgeMap[key] = (byte)_keyboard.Value;
+									if (_weightedbox.IsChecked)
+									{
+										_edgelines.Remove(key);
+										_edgelines.Add(key, new(_movableNodes[key._nodeSel1].Bounds.Center, _movableNodes[key._nodeSel2].Bounds.Center, _directedbox.IsChecked, _keyboard.Value.ToString(), 5) { ArrowColor = Color.Yellow });
+									}
 									_actionlogText.Text = $"Edge is updated in the graph.\n({(char)((byte)'a' + _nodeSel1)}, {(char)((byte)'a' + _nodeSel2)}) with weight {_keyboard.Value}";
 									_actionlogText.TextColor = Color.DarkGreen;
 								}
@@ -175,7 +172,7 @@ namespace GTT
 									_actionlogText.Text = "Edge does not exist, and thus cannot be removed!";
 									_actionlogText.TextColor = Color.DarkRed;
 								}
-								else if (_keyboard.Value > 0 && _keyboard.Value > 255)
+								else if (_keyboard.Value < 0 || _keyboard.Value > 255)
 								{
 									_actionlogText.Text = "Invalid weight. Weight should be between 1 and 255\n Enter 0 to remove existing edge";
 									_actionlogText.TextColor = Color.DarkRed;
@@ -183,65 +180,71 @@ namespace GTT
 								else
 								{
 									_edgeMap.Add(key, (byte)_keyboard.Value);
-									_edgelines.Add(key, new LineObject(_movableNodes[_nodeSel1].Bounds.Center, _movableNodes[_nodeSel2].Bounds.Center, _directedbox.IsChecked, _weightedbox.IsChecked ? _keyboard.Value.ToString() : null, 5) { ArrowColor = Color.Yellow });
+									_edgelines.Add(key, new(_movableNodes[key._nodeSel1].Bounds.Center, _movableNodes[key._nodeSel2].Bounds.Center, _directedbox.IsChecked, _weightedbox.IsChecked ? _keyboard.Value.ToString() : null, 5) { ArrowColor = Color.Yellow });
 									_actionlogText.Text = $"Edge is added to the graph.\n({(char)((byte)'a' + _nodeSel1)}, {(char)((byte)'a' + _nodeSel2)}) with weight {_keyboard.Value}";
 									_actionlogText.TextColor = Color.DarkGreen;
 								}
 							}
 							_nodeSel1 = _nodeSel2 = 255;
 						}
-						if (_cancel_edge.State == ComponentState.Release)
+						if (_cancel_edge.ClickedOnUpdate(gt))
 							_nodeSel1 = _nodeSel2 = 255;
 					}
 					break;
 			}
-			if (_submitNodes.State == ComponentState.Release)
+
+			if (_state != State.StartScreen)
 			{
-				byte x;
-				if (_state == State.SelectGraphProperties)
+				if (_submitNodes.ClickedOnUpdate(gt))
 				{
-					_manager.CurrentlyLocked = 0;
-					_manager.TotalElements = 0;
-					_nodeCount = _nodeCountPicker.Index + 2;
-					_movableNodes = new MovableObject[_nodeCount];
-					_nodeButtons = new Button[_nodeCount];
-					Rectangle pos = new(10, 10, 40, 40);
-					for (x = 0; x < _nodeCount; x++)
+					byte x;
+					if (_state == State.SelectGraphProperties)
 					{
-						string title = ((char)(x + 'a')).ToString();
-						_movableNodes[x] = new(_manager, title, pos, Color.White);
-						_nodeButtons[x] = new(pos, title);
-						pos.X += 50;
-						if (pos.Right >= _graphDragRegion.Width)
+						_manager.CurrentlyLocked = 0;
+						_manager.TotalElements = 0;
+						_nodeCount = _nodeCountPicker.Index + 2;
+						_movableNodes = new MovableObject[_nodeCount];
+						_nodeButtons = new Button[_nodeCount];
+						Rectangle pos = new(10, 10, 40, 40);
+						for (x = 0; x < _nodeCount; x++)
 						{
-							pos.X = 10;
-							pos.Y += 50;
+							string title = ((char)(x + 'a')).ToString();
+							_movableNodes[x] = new(_manager, title, pos, Color.White);
+							_nodeButtons[x] = new(pos, title);
+							pos.X += 50;
+							if (pos.Right >= _graphDragRegion.Width)
+							{
+								pos.X = 10;
+								pos.Y += 50;
+							}
 						}
+						_logText.Text = "Drag and arrange the nodes of the graph";
 					}
-					_logText.Text = "Drag and arrange the nodes of the graph";
-				}
-				else if (_state == State.ArrangeGraph)
-				{
-					for (x = 0; x < _nodeCount; x++)
+					else if (_state == State.ArrangeGraph)
 					{
-						_nodeButtons?[x].Set(_movableNodes[x].Bounds);
+						for (x = 0; x < _nodeCount; x++)
+						{
+							_nodeButtons?[x].Set(_movableNodes[x].Bounds);
+						}
+						_edgeMap.Clear();
+						_edgelines.Clear();
 					}
-					_edgeMap.Clear();
-					_edgelines.Clear();
+					else if (_state == State.SelectEdges)
+					{
+						//TODO
+					}
+					_state++;
 				}
-				else if (_state == State.SelectEdges)
+				if (_backButton.ClickedOnUpdate(gt))
 				{
-					//TODO
-				}
-				_state++;
-			}
-			if (_backButton.State == ComponentState.Release)
-			{
-				_state--;
-				if (_state == State.StartScreen)
-				{
-					_backButton.Enabled = false;
-					_submitNodes.Enabled = false;
+					_state--;
+					_logText.Text = "";
+					_actionlogText.Text = "";
+					if (_state == State.StartScreen)
+					{
+						_backButton.Enabled = false;
+						_submitNodes.Enabled = false;
+					}
 				}
 			}
 		}
