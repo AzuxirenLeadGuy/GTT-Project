@@ -48,6 +48,7 @@ namespace GTT
 				_label = new TextBox(labeldest, label, GameApp.CommonData.Font, Color.Black);
 			}
 		}
+		public string Text { get => _label.Text; set => _label.Text = value; }
 		public void SetLabelColor(Color color) => _label.TextColor = color;
 		public void Draw(SpriteBatch batch)
 		{

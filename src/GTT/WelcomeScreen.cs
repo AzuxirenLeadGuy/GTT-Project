@@ -1,20 +1,20 @@
 using System.Linq;
 using System.Collections.Generic;
 using Azuxiren.MG;
-using Azuxiren.MG.Menu;
 using Microsoft.Xna.Framework;
 
 namespace GTT
 {
 	public class WelcomeScreen : IScreen
 	{
-		private enum State : byte { StartScreen, SelectGraphProperties, ArrangeGraph, SelectEdges, SelectAlgorithm }
+		private enum State : byte { StartScreen, SelectGraphProperties, ArrangeGraph, SelectEdges, SelectAlgorithm, NormalShowcase, FloydShowcase, }
 		private State _state;
-		private readonly Button _exitButton, _demoButton, _submitNodes, _backButton, _add_edge, _cancel_edge;
-		private TextBox _welcomeText, _selectNodes, _logText, _actionlogText;
+		private readonly Button _exitButton, _demoButton, _submitNodes, _backButton, _add_edge, _cancel_edge, _next_update, _reset_update;
+		private TextBox _welcomeText, _selectNodes, _logText, _actionlogText, _selectAlgo;
 		private readonly Checkbox _directedbox, _weightedbox;
 		private Rectangle _graphDragRegion;
 		private readonly Picker _nodeCountPicker;
+		private Picker _algoPicker, _sourcePicker, _destPicker;
 		private readonly MovableObjectManager _manager;
 		private MovableObject[] _movableNodes;
 		private int _nodeCount;
@@ -22,14 +22,23 @@ namespace GTT
 		private readonly PlugKeyboard _keyboard;
 		private Button[] _nodeButtons;
 		private readonly Dictionary<(byte From, byte To), LineObject> _edgelines;
-		private readonly Dictionary<(byte From, byte To), byte> _edgeMap;
+		private byte[,] _edgeMap;
+		private GraphDrawing _commonGraphShowcase;
+		private GraphDrawingUpdate[] _commonGraphUpdates;
+		private int _currentUpdateIndex, _lastUpdateIndex;
 		public WelcomeScreen()
 		{
+			_movableNodes = null!;
+			_edgeMap = null!;
+			_algoPicker = null!;
+			_sourcePicker = null!;
+			_destPicker = null!;
+			_commonGraphShowcase = default;
+			_commonGraphUpdates = null!;
+			_currentUpdateIndex = _lastUpdateIndex = 0;
 			_nodeButtons = System.Array.Empty<Button>();
 			_edgelines = new();
-			_edgeMap = new();
 			_state = State.StartScreen;
-			_movableNodes = null!;
 			var bound = GameApp.CommonData.ScreenBounds;
 			_welcomeText = new(new Rectangle(0, 0, bound.Width, bound.Height / 4), "Welcome to Graph Algorithms Demo", GameApp.CommonData.FormalFont, Color.Black, Alignment.Centered);
 			bound = new Rectangle(0, _welcomeText.Bounds.Bottom, bound.Width, bound.Height - _welcomeText.Bounds.Bottom);
@@ -69,9 +78,11 @@ namespace GTT
 			_backButton.Set(_backButton.Bounds);
 			y.Y /= 2;
 			y.Height = y.Y / 4;
-			_add_edge = new Button(y, "OK");
+			_add_edge = new(y, "OK");
+			_next_update = new(y, "Next");
 			y.Y += 2 * y.Height;
-			_cancel_edge = new Button(y, "Cancel");
+			_cancel_edge = new(y, "Cancel");
+			_reset_update = new(y, "Reset");
 			y = new Rectangle(0, _submitNodes.Bounds.Y, _submitNodes.Bounds.X, GameApp.CommonData.ScreenBounds.Height - _graphDragRegion.Height);
 			y.Height /= 2;
 			_logText = new TextBox(y, "", GameApp.CommonData.Font, Color.Black);
@@ -127,30 +138,36 @@ namespace GTT
 						_logText.Text = "Select the destination node     ";
 					else
 					{
+						string keytext = $"({GameApp.GetLabel(_nodeSel1)},{GameApp.GetLabel(_nodeSel2)})";
 						if (_weightedbox.IsChecked)
 						{
 							_keyboard.Update(gt);
-							_logText.Text = $"Select the weight and press OK\nto add the edge ({(char)((byte)'a' + _nodeSel1)}, {(char)((byte)'a' + _nodeSel2)})";
+							_logText.Text = $"Select the weight and press OK\nto add the edge {keytext}";
 						}
 						else
-							_logText.Text = $"Select OK to add edge ({(char)((byte)'a' + _nodeSel1)}, {(char)((byte)'a' + _nodeSel2)})      ";
+							_logText.Text = $"Select OK to add edge {keytext}      ";
 						if (_add_edge.ClickedOnUpdate(gt))
 						{
 							var key = (_nodeSel1, _nodeSel2);
+							keytext = $"({GameApp.GetLabel(key._nodeSel1)},{GameApp.GetLabel(key._nodeSel2)})";
 							if ((_directedbox.IsChecked == false) && (key._nodeSel1 > key._nodeSel2))
 								(key._nodeSel1, key._nodeSel2) = (key._nodeSel2, key._nodeSel1);
-							if (_edgeMap.ContainsKey(key))
+							if (_edgeMap[_nodeSel1, _nodeSel2] != 0)
 							{
 								if (_weightedbox.IsChecked == false || _keyboard.Value == 0)
 								{
-									_edgeMap.Remove(key);
+									_edgeMap[_nodeSel1, _nodeSel2] = 0;
+									if (_directedbox.IsChecked == false)
+										_edgeMap[_nodeSel2, _nodeSel1] = 0;
 									_edgelines.Remove(key);
 									_actionlogText.Text = $"Edge ({(char)((byte)'a' + _nodeSel1)}, {(char)((byte)'a' + _nodeSel2)}) is removed from the graph";
 									_actionlogText.TextColor = Color.DarkGreen;
 								}
 								else if (_keyboard.Value < 0 || _keyboard.Value <= 255)
 								{
-									_edgeMap[key] = (byte)_keyboard.Value;
+									_edgeMap[_nodeSel1, _nodeSel2] = (byte)_keyboard.Value;
+									if (_directedbox.IsChecked == false)
+										_edgeMap[_nodeSel2, _nodeSel1] = _edgeMap[_nodeSel1, _nodeSel2];
 									if (_weightedbox.IsChecked)
 									{
 										_edgelines.Remove(key);
@@ -179,9 +196,11 @@ namespace GTT
 								}
 								else
 								{
-									_edgeMap.Add(key, (byte)_keyboard.Value);
+									_edgeMap[_nodeSel1, _nodeSel2] = (byte)_keyboard.Value;
+									if (_directedbox.IsChecked == false)
+										_edgeMap[_nodeSel2, _nodeSel1] = _edgeMap[_nodeSel1, _nodeSel2];
 									_edgelines.Add(key, new(_movableNodes[key._nodeSel1].Bounds.Center, _movableNodes[key._nodeSel2].Bounds.Center, _directedbox.IsChecked, _weightedbox.IsChecked ? _keyboard.Value.ToString() : null, 5) { ArrowColor = Color.Yellow });
-									_actionlogText.Text = $"Edge is added to the graph.\n({(char)((byte)'a' + _nodeSel1)}, {(char)((byte)'a' + _nodeSel2)}) with weight {_keyboard.Value}";
+									_actionlogText.Text = $"Edge is added to the graph.\n({GameApp.GetLabel(key._nodeSel1)}, {GameApp.GetLabel(key._nodeSel1)}) with weight {_keyboard.Value}";
 									_actionlogText.TextColor = Color.DarkGreen;
 								}
 							}
@@ -189,6 +208,27 @@ namespace GTT
 						}
 						if (_cancel_edge.ClickedOnUpdate(gt))
 							_nodeSel1 = _nodeSel2 = 255;
+					}
+					break;
+				case State.SelectAlgorithm:
+					_algoPicker.Update(gt);
+					_sourcePicker.Update(gt);
+					_destPicker.Update(gt);
+					break;
+				case State.NormalShowcase:
+					if (_next_update.ClickedOnUpdate(gt))
+					{
+						_logText.Text = _commonGraphUpdates[_currentUpdateIndex].UpdateLog;
+						_commonGraphShowcase.Update(_commonGraphUpdates[_currentUpdateIndex++]);
+						if (_currentUpdateIndex == _lastUpdateIndex) _next_update.Enabled = false;
+					}
+					if (_reset_update.ClickedOnUpdate(gt))
+					{
+						_commonGraphShowcase.Reset();
+						_logText.Text = _commonGraphUpdates[0].UpdateLog;
+						_commonGraphShowcase.Update(_commonGraphUpdates[0]);
+						_currentUpdateIndex = 1;
+						_next_update.Enabled = true;
 					}
 					break;
 			}
@@ -226,17 +266,61 @@ namespace GTT
 						{
 							_nodeButtons?[x].Set(_movableNodes[x].Bounds);
 						}
-						_edgeMap.Clear();
+						_edgeMap = new byte[_nodeCount, _nodeCount];
 						_edgelines.Clear();
 					}
 					else if (_state == State.SelectEdges)
 					{
-						//TODO
+						Rectangle algobd = new(0, 0, _graphDragRegion.Width / 2, 80);
+						Global.SetCenter(ref algobd, GameApp.CommonData.ScreenBounds);
+						string[] options = _directedbox.IsChecked
+							? (new string[] { "Depth First Search", "Breadth First Search", "Dijkstra Algorithm", "Floyd-Warshall Algorithm" })
+							: (new string[] { "Depth First Search", "Breadth First Search", "Dijkstra Algorithm", "Floyd-Warshall Algorithm", "Kruskal's Algorithm" });
+						_algoPicker = new(options, algobd);
+						_commonGraphShowcase = new(_movableNodes.Select(x => x.Bounds).ToArray(), _edgelines);
+						algobd.Y -= 2 * algobd.Height;
+						_selectAlgo = new TextBox(algobd, "Select the algorithm", GameApp.CommonData.Font);
+						string[] sx = new string[_nodeCount], dx = new string[_nodeCount + 1];
+						for (byte j = 0; j < _nodeCount; j++)
+						{
+							sx[j] = dx[j] = GameApp.GetLabel(j);
+						}
+						dx[_nodeCount] = "None";
+						algobd.Y -= 2 * algobd.Height;
+						algobd.Width /= 3;
+						_sourcePicker = new(sx, algobd);
+						algobd.X += 2 * algobd.Width;
+						_destPicker = new(dx, algobd);
+					}
+					else if (_state == State.SelectAlgorithm)
+					{
+						switch (_algoPicker.Index)
+						{
+							case 0:
+								_commonGraphUpdates = Algorithms.DepthFirstSearch((byte)_nodeCount, _edgeMap, _sourcePicker.Index, _destPicker.Index).ToArray();
+								goto default;
+							case 1://TODO
+								break;
+							case 2://TODO
+								break;
+							case 4://TODO
+								break;
+							case 3://TODO
+								_state++;
+								break;
+							default:
+								_lastUpdateIndex = _commonGraphUpdates.Length;
+								_currentUpdateIndex = 1;
+								_logText.Text = _commonGraphUpdates[0].UpdateLog;
+								_commonGraphShowcase.Update(_commonGraphUpdates[0]);
+								break;
+						}
 					}
 					_state++;
 				}
 				if (_backButton.ClickedOnUpdate(gt))
 				{
+					if (_state == State.FloydShowcase) _state--;
 					_state--;
 					_logText.Text = "";
 					_actionlogText.Text = "";
@@ -291,11 +375,28 @@ namespace GTT
 					_logText.Draw(GameApp.CommonData.Batch);
 					_actionlogText.Draw(GameApp.CommonData.Batch);
 					break;
+				case State.SelectAlgorithm:
+					_selectAlgo.Draw(GameApp.CommonData.Batch);
+					_algoPicker.Draw(gt);
+					if (_algoPicker.Index < 3)
+					{
+						_sourcePicker.Draw(gt);
+						_destPicker.Draw(gt);
+					}
+					break;
+				case State.NormalShowcase:
+					GameApp.CommonData.Batch.Draw(GameApp.CommonData.Patch, _graphDragRegion, Color.DarkGreen);
+					_commonGraphShowcase.Draw();
+					_next_update.Draw(gt);
+					_reset_update.Draw(gt);
+					_logText.Draw(GameApp.CommonData.Batch);
+					break;
 			}
 			if (_state != State.StartScreen)
 			{
 				_backButton.Draw(gt);
-				_submitNodes.Draw(gt);
+				if (_state < State.NormalShowcase)
+					_submitNodes.Draw(gt);
 			}
 		}
 	}

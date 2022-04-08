@@ -42,5 +42,6 @@ namespace GTT
 			CommonData.Input.Update();
 			base.Update(gameTime);
 		}
+		public static string GetLabel(byte x) => ((char)((byte)'a' + x)).ToString();
 	}
 }
