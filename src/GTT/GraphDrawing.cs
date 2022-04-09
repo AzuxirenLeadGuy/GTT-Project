@@ -18,10 +18,10 @@ namespace GTT
 		{
 			int i, l = pos.Length;
 			Nodes = new (TextBox Box, Color color)[l];
-			for (i = 0; i < l; i++) Nodes[i] = (new TextBox(pos[i], ((char)((byte)'a' + i)).ToString(), GameApp.CommonData.Font, Color.Black), Color.White);
+			for (i = 0; i < l; i++) Nodes[i] = (new TextBox(pos[i], GameApp.GetLabel((byte)i), GameApp.CommonData.Font, Color.Black), Color.White);
 			Edges = edges;
 			_batch = GameApp.CommonData.Batch;
-			_patch = GameApp.CommonData.Patch;
+			_patch = GameApp.CommonData.Circle;
 			Log = "";
 		}
 		public void Draw()

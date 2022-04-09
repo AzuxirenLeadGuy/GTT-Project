@@ -10,8 +10,7 @@ namespace GTT
 		private readonly Button _next, _prev;
 		private TextBox _textbox;
 		private readonly string[] _choices;
-		private byte _index;
-		public byte Index => _index;
+		public byte Index { get; private set; }
 		private readonly byte _limit;
 		public class SelectArgs : EventArgs
 		{
@@ -28,24 +27,24 @@ namespace GTT
 			{
 				Alignment = Alignment.Centered
 			};
-			_index = 0;
+			Index = 0;
 			_limit = (byte)(_choices.Length - 1);
 			_next.OnRelease += Next;
 			_prev.OnRelease += Prev;
 		}
 		private void Next(object? o, ComponentArgs a)
 		{
-			if (_index >= _limit) return;
-			byte past = _index++;
-			_textbox.Text = _choices[_index];
-			SelectionChanged?.Invoke(this, new SelectArgs() { Prev = past, Curr = _index });
+			if (Index >= _limit) return;
+			byte past = Index++;
+			_textbox.Text = _choices[Index];
+			SelectionChanged?.Invoke(this, new SelectArgs() { Prev = past, Curr = Index });
 		}
 		private void Prev(object? o, ComponentArgs a)
 		{
-			if (_index == 0) return;
-			byte past = _index;
-			_textbox.Text = _choices[--_index];
-			SelectionChanged?.Invoke(this, new SelectArgs() { Prev = past, Curr = _index });
+			if (Index == 0) return;
+			byte past = Index;
+			_textbox.Text = _choices[--Index];
+			SelectionChanged?.Invoke(this, new SelectArgs() { Prev = past, Curr = Index });
 		}
 		public void Set(Rectangle bds)
 		{

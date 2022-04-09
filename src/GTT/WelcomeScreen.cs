@@ -171,7 +171,7 @@ namespace GTT
 									if (_weightedbox.IsChecked)
 									{
 										_edgelines.Remove(key);
-										_edgelines.Add(key, new(_movableNodes[key._nodeSel1].Bounds.Center, _movableNodes[key._nodeSel2].Bounds.Center, _directedbox.IsChecked, _keyboard.Value.ToString(), 5) { ArrowColor = Color.Yellow });
+										_edgelines.Add(key, CreateLine(key));
 									}
 									_actionlogText.Text = $"Edge is updated in the graph.\n{keytext} with weight {_keyboard.Value}";
 									_actionlogText.TextColor = Color.DarkGreen;
@@ -199,7 +199,7 @@ namespace GTT
 									_edgeMap[_nodeSel1, _nodeSel2] = (byte)_keyboard.Value;
 									if (_directedbox.IsChecked == false)
 										_edgeMap[_nodeSel2, _nodeSel1] = _edgeMap[_nodeSel1, _nodeSel2];
-									_edgelines.Add(key, new(_movableNodes[key._nodeSel1].Bounds.Center, _movableNodes[key._nodeSel2].Bounds.Center, _directedbox.IsChecked, _weightedbox.IsChecked ? _keyboard.Value.ToString() : null, 5) { ArrowColor = Color.Yellow });
+									_edgelines.Add(key, CreateLine(key));
 									_actionlogText.Text = $"Edge is added to the graph.\n({GameApp.GetLabel(key._nodeSel1)}, {GameApp.GetLabel(key._nodeSel1)}) with weight {_keyboard.Value}";
 									_actionlogText.TextColor = Color.DarkGreen;
 								}
@@ -241,9 +241,9 @@ namespace GTT
 						Rectangle pos = new(10, 10, 40, 40);
 						for (x = 0; x < _nodeCount; x++)
 						{
-							string title = ((char)(x + 'a')).ToString();
+							string title = GameApp.GetLabel(x);
 							_movableNodes[x] = new(_manager, title, pos, Color.White);
-							_nodeButtons[x] = new(pos, title);
+							_nodeButtons[x] = new Button(pos, title, circle: true);
 							pos.X += 50;
 							if (pos.Right >= _graphDragRegion.Width)
 							{
@@ -377,7 +377,7 @@ namespace GTT
 					}
 					break;
 				case State.NormalShowcase:
-					GameApp.CommonData.Batch.Draw(GameApp.CommonData.Patch, _graphDragRegion, Color.DarkGreen);
+					GameApp.CommonData.Batch.Draw(GameApp.CommonData.Patch, _graphDragRegion, GameApp.CommonData.GraphDrawingBackColor);
 					_commonGraphShowcase.Draw();
 					_next_update.Draw(gt);
 					_reset_update.Draw(gt);
@@ -399,6 +399,12 @@ namespace GTT
 			_logText.Text = _commonGraphUpdates[0].UpdateLog;
 			_commonGraphShowcase.Update(_commonGraphUpdates[0]);
 			_next_update.Enabled = true;
+		}
+		private LineObject CreateLine((byte from, byte to) key)
+		{
+			LineObject x = new(_movableNodes[key.from].Bounds.Center, _movableNodes[key.to].Bounds.Center, _directedbox.IsChecked, _keyboard.Value.ToString(), 5) { ArrowColor = Color.Yellow };
+			x.SetLabelColor(Color.White);
+			return x;
 		}
 	}
 }

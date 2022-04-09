@@ -65,7 +65,7 @@ namespace GTT
 		}
 		public void Draw()
 		{
-			GameApp.CommonData.Batch.Draw(GameApp.CommonData.Patch, _box, Color);
+			GameApp.CommonData.Batch.Draw(GameApp.CommonData.Circle, _box, Color);
 			_textBox.Draw(GameApp.CommonData.Batch);
 		}
 	}

@@ -26,7 +26,7 @@ namespace GTT
 			CommonData.Circle = Content.Load<Texture2D>("circle");
 			Rectangle screen = Window.ClientBounds;
 			CommonData.CurrentApp = this;
-			CommonData.GraphDrawingBackColor = Color.LimeGreen;
+			CommonData.GraphDrawingBackColor = Color.DarkGreen;
 			CommonData.ScreenBounds = new(0, 0, screen.Width, screen.Height);
 			base.LoadContent();
 		}
@@ -42,6 +42,6 @@ namespace GTT
 			CommonData.Input.Update();
 			base.Update(gameTime);
 		}
-		public static string GetLabel(byte x) => ((char)((byte)'a' + x)).ToString();
+		public static string GetLabel(byte x) => ((char)((byte)'A' + x)).ToString();
 	}
 }
