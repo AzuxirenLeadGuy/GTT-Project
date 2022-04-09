@@ -300,7 +300,8 @@ namespace GTT
 								_commonGraphUpdates = Algorithms.DepthFirstSearch((byte)_nodeCount, _edgeMap, _sourcePicker.Index, _destPicker.Index).ToArray();
 								goto default;
 							case 1://TODO
-								break;
+								_commonGraphUpdates = Algorithms.BreadthFirstSearch((byte)_nodeCount, _edgeMap, _sourcePicker.Index, _destPicker.Index).ToArray();
+								goto default;
 							case 2://TODO
 								break;
 							case 4://TODO
