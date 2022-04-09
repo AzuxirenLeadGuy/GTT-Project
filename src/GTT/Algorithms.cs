@@ -7,7 +7,7 @@ namespace GTT
 {
 	public static class Algorithms
 	{
-		public readonly static Color[] AllowedColors = { Color.White, Color.LightPink, Color.Cyan, Color.Orange, Color.LimeGreen };
+		public readonly static Color[] AllowedColors = { Color.White, Color.LightPink, Color.Cyan, Color.Orange, Color.LimeGreen, Color.Red };
 		public static G_Updates DepthFirstSearch(byte nodeCount, byte[,] edges, byte source, byte dest)
 		{
 			byte[] color = new byte[nodeCount];
@@ -169,11 +169,72 @@ namespace GTT
 				}
 			} while (queue.Count > 0);
 			yield return new(255, AllowedColors[0], "The destination cannot be reached");
-			string x = $"[ {cost[0]}";
-			for (i = 1; i < nodeCount; i++) x += $", {cost[i]}";
+			string x = $"[ {(cost[0] == -1 ? "INF" : cost[0].ToString())}";
+			for (i = 1; i < nodeCount; i++) x += $", {(cost[i] == -1 ? "INF" : cost[i].ToString())}";
 			x += " ]";
 			yield return new(255, AllowedColors[0], $"The cost vector is \n{x}");
 			yield break;
+		}
+		public static G_Updates Kruskal(byte nodeCount, byte[,] edges)
+		{
+			DisjointSet sets = new(nodeCount);
+			SortedSet<(byte Weight, byte From, byte To)> edgeSet = new();
+			byte i, j;
+			nodeCount--;
+			for (i = 0; i < nodeCount; i++)
+			{
+				for (j = (byte)(i + 1); j <= nodeCount; j++)
+				{
+					if (edges[i, j] > 0) edgeSet.Add((edges[i, j], i, j));
+				}
+			}
+			yield return new(255, AllowedColors[0], "Going through all edges in increasing order of weights");
+			i = 0;
+			int cost = 0;
+			foreach (var (weight, from, to) in edgeSet)
+			{
+				string text = $"({GameApp.GetLabel(from)},{GameApp.GetLabel(to)})";
+				yield return new GraphDrawingUpdate(from, to, AllowedColors[2], $"Checking edge {text} ...");
+				if (sets.AreMerged(from, to))
+					yield return new(from, to, AllowedColors[5], $"Adding this edge will introduce a cycle\nEdge {text} is discarded");
+				else
+				{
+					yield return new(from, to, AllowedColors[0], $"This edge can be included in the MST.\n Edge {text} is included");
+					cost += weight;
+					i++;
+					sets.Merge(from, to);
+				}
+				if (i == nodeCount)
+				{
+					yield return new(255, AllowedColors[0], $"MST of cost {cost} is formed with the edges marked with white color");
+					yield break;
+				}
+			}
+			yield return new(255, AllowedColors[0], $"Cannot select {nodeCount} edges to make a MST\nThe graph is not connected");
+			yield break;
+		}
+	}
+	public struct DisjointSet
+	{
+		public byte[] Parents, Ranks;
+		public DisjointSet(byte size)
+		{
+			Parents = new byte[size];
+			Ranks = new byte[size];
+			for (byte i = 0; i < size; i++) Parents[i] = i;
+		}
+		public byte GetParent(byte x) => x == Parents[x] ? x : (Parents[x] = GetParent(Parents[x]));
+		public bool AreMerged(byte a, byte b) => GetParent(a) == GetParent(b);
+		public void Merge(byte a, byte b)
+		{
+			a = GetParent(a);
+			b = GetParent(b);
+			if (a == b) return;
+			if (Ranks[a] < Ranks[b])
+				(a, b) = (b, a);
+			Parents[b] = a;
+			if (Ranks[a] == Ranks[b])
+				Ranks[a]++;
 		}
 	}
 }

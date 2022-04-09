@@ -298,8 +298,9 @@ namespace GTT
 							case 2:
 								_commonGraphUpdates = Algorithms.Dijkstra((byte)_nodeCount, _edgeMap, _sourcePicker.Index, _destPicker.Index).ToArray();
 								goto default;
-							case 4://TODO
-								break;
+							case 4:
+								_commonGraphUpdates = Algorithms.Kruskal((byte)_nodeCount, _edgeMap).ToArray();
+								goto default;
 							case 3://TODO
 								_state++;
 								break;
