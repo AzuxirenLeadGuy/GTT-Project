@@ -213,6 +213,38 @@ namespace GTT
 			yield return new(255, AllowedColors[0], $"Cannot select {nodeCount} edges to make a MST\nThe graph is not connected");
 			yield break;
 		}
+		public static F_Updates FloydWarshall(byte nodeCount, byte[,] edges)
+		{
+			uint[,] matrix = new uint[nodeCount, nodeCount];
+			byte i, j, k;
+			for (i = 0; i < nodeCount; i++)
+			{
+				for (j = 0; j < nodeCount; j++)
+				{
+					matrix[i, j] = edges[i, j];
+				}
+			}
+			yield return new("Initializing the matrix from the adjacency matrix");
+			for (i = 0; i < nodeCount; i++)
+			{
+				yield return new($"Pass {i+1}");
+				for (j = 0; j < nodeCount; j++)
+				{
+					if (i == j) continue;
+					for (k = 0; k < nodeCount; k++)
+					{
+						if (k == i || k == j || matrix[i, k] == 0 || matrix[j, i] == 0) continue;
+						uint newdist = matrix[j, i] + matrix[i, k];
+						if (matrix[j, k] == 0 || newdist < matrix[j, k])
+						{
+							matrix[j, k] = newdist;
+							yield return new(j, k, newdist, $"Updated distance between {GameApp.GetLabel(j)} and {GameApp.GetLabel(k)} to {newdist}");
+						}
+					}
+				}
+			}
+			yield return new("Matrix for all pairs-shortest distance is ready.");
+		}
 	}
 	public struct DisjointSet
 	{

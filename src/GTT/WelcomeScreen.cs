@@ -25,6 +25,8 @@ namespace GTT
 		private byte[,] _edgeMap;
 		private GraphDrawing _commonGraphShowcase;
 		private GraphDrawingUpdate[] _commonGraphUpdates;
+		private FloydWarshallInfo _floydWarshallInfo;
+		private FloydWarshallInfoUpdate[] _floydUpdates;
 		private int _currentUpdateIndex, _lastUpdateIndex;
 		public WelcomeScreen()
 		{
@@ -33,8 +35,10 @@ namespace GTT
 			_algoPicker = null!;
 			_sourcePicker = null!;
 			_destPicker = null!;
-			_commonGraphShowcase = default;
 			_commonGraphUpdates = null!;
+			_floydUpdates = null!;
+			_floydWarshallInfo = default;
+			_commonGraphShowcase = default;
 			_currentUpdateIndex = _lastUpdateIndex = 0;
 			_nodeButtons = System.Array.Empty<Button>();
 			_edgelines = new();
@@ -95,23 +99,30 @@ namespace GTT
 			int i;
 			switch (_state)
 			{
+				#region 1-Update
 				case State.StartScreen:
 					_exitButton.Update(gt);
 					_demoButton.Update(gt);
 					_backButton.Enabled = true;
 					_submitNodes.Enabled = true;
 					break;
+				#endregion
+				#region 2-Update
 				case State.SelectGraphProperties:
 					_nodeCountPicker.Update(gt);
 					_directedbox.Update(gt);
 					_weightedbox.Update(gt);
 					break;
+				#endregion
+				#region 3-Update
 				case State.ArrangeGraph:
 					for (i = _nodeCount - 1; i >= 0; i--)
 					{
 						_movableNodes[i].Update();
 					}
 					break;
+				#endregion
+				#region 4-Update
 				case State.SelectEdges:
 					for (i = 0; i < _nodeCount; i++)
 					{
@@ -210,11 +221,15 @@ namespace GTT
 							_nodeSel1 = _nodeSel2 = 255;
 					}
 					break;
+				#endregion
+				#region 5-Update
 				case State.SelectAlgorithm:
 					_algoPicker.Update(gt);
 					_sourcePicker.Update(gt);
 					_destPicker.Update(gt);
 					break;
+				#endregion
+				#region 6-Update
 				case State.NormalShowcase:
 					if (_next_update.ClickedOnUpdate(gt))
 					{
@@ -225,6 +240,19 @@ namespace GTT
 					if (_reset_update.ClickedOnUpdate(gt))
 						ResetAlgo();
 					break;
+				#endregion
+				#region 7-Update
+				case State.FloydShowcase:
+					if (_next_update.ClickedOnUpdate(gt))
+					{
+						_logText.Text = _floydUpdates[_currentUpdateIndex].Log;
+						_floydWarshallInfo.Update(_floydUpdates[_currentUpdateIndex++]);
+						if (_currentUpdateIndex == _lastUpdateIndex) _next_update.Enabled = false;
+					}
+					if (_reset_update.ClickedOnUpdate(gt))
+						ResetFloyd();
+					break;
+					#endregion
 			}
 			if (_state != State.StartScreen)
 			{
@@ -301,7 +329,9 @@ namespace GTT
 							case 4:
 								_commonGraphUpdates = Algorithms.Kruskal((byte)_nodeCount, _edgeMap).ToArray();
 								goto default;
-							case 3://TODO
+							case 3:
+								_floydUpdates = Algorithms.FloydWarshall((byte)_nodeCount, _edgeMap).ToArray();
+								ResetFloyd();
 								_state++;
 								break;
 							default:
@@ -380,6 +410,12 @@ namespace GTT
 				case State.NormalShowcase:
 					GameApp.CommonData.Batch.Draw(GameApp.CommonData.Patch, _graphDragRegion, GameApp.CommonData.GraphDrawingBackColor);
 					_commonGraphShowcase.Draw();
+					goto default;
+				case State.FloydShowcase:
+					GameApp.CommonData.Batch.Draw(GameApp.CommonData.Patch, _graphDragRegion, GameApp.CommonData.GraphDrawingBackColor);
+					_floydWarshallInfo.Draw();
+					goto default;
+				default:
 					_next_update.Draw(gt);
 					_reset_update.Draw(gt);
 					_logText.Draw(GameApp.CommonData.Batch);
@@ -406,6 +442,14 @@ namespace GTT
 			LineObject x = new(_movableNodes[key.from].Bounds.Center, _movableNodes[key.to].Bounds.Center, _directedbox.IsChecked, _keyboard.Value.ToString(), 5) { ArrowColor = Color.Yellow };
 			x.SetLabelColor(Color.White);
 			return x;
+		}
+		private void ResetFloyd()
+		{
+			_lastUpdateIndex = _floydUpdates.Length;
+			_floydWarshallInfo = new FloydWarshallInfo(_edgeMap, _graphDragRegion);
+			_currentUpdateIndex = 1;
+			_logText.Text = _floydUpdates[0].Log;
+			_next_update.Enabled = true;
 		}
 	}
 }
