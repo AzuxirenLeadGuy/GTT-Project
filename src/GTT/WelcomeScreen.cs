@@ -160,7 +160,7 @@ namespace GTT
 									if (_directedbox.IsChecked == false)
 										_edgeMap[_nodeSel2, _nodeSel1] = 0;
 									_edgelines.Remove(key);
-									_actionlogText.Text = $"Edge ({(char)((byte)'a' + _nodeSel1)}, {(char)((byte)'a' + _nodeSel2)}) is removed from the graph";
+									_actionlogText.Text = $"Edge {keytext} is removed from the graph";
 									_actionlogText.TextColor = Color.DarkGreen;
 								}
 								else if (_keyboard.Value < 0 || _keyboard.Value <= 255)
@@ -173,7 +173,7 @@ namespace GTT
 										_edgelines.Remove(key);
 										_edgelines.Add(key, new(_movableNodes[key._nodeSel1].Bounds.Center, _movableNodes[key._nodeSel2].Bounds.Center, _directedbox.IsChecked, _keyboard.Value.ToString(), 5) { ArrowColor = Color.Yellow });
 									}
-									_actionlogText.Text = $"Edge is updated in the graph.\n({(char)((byte)'a' + _nodeSel1)}, {(char)((byte)'a' + _nodeSel2)}) with weight {_keyboard.Value}";
+									_actionlogText.Text = $"Edge is updated in the graph.\n{keytext} with weight {_keyboard.Value}";
 									_actionlogText.TextColor = Color.DarkGreen;
 								}
 								else
@@ -223,16 +223,9 @@ namespace GTT
 						if (_currentUpdateIndex == _lastUpdateIndex) _next_update.Enabled = false;
 					}
 					if (_reset_update.ClickedOnUpdate(gt))
-					{
-						_commonGraphShowcase.Reset();
-						_logText.Text = _commonGraphUpdates[0].UpdateLog;
-						_commonGraphShowcase.Update(_commonGraphUpdates[0]);
-						_currentUpdateIndex = 1;
-						_next_update.Enabled = true;
-					}
+						ResetAlgo();
 					break;
 			}
-
 			if (_state != State.StartScreen)
 			{
 				if (_submitNodes.ClickedOnUpdate(gt))
@@ -299,21 +292,19 @@ namespace GTT
 							case 0:
 								_commonGraphUpdates = Algorithms.DepthFirstSearch((byte)_nodeCount, _edgeMap, _sourcePicker.Index, _destPicker.Index).ToArray();
 								goto default;
-							case 1://TODO
+							case 1:
 								_commonGraphUpdates = Algorithms.BreadthFirstSearch((byte)_nodeCount, _edgeMap, _sourcePicker.Index, _destPicker.Index).ToArray();
 								goto default;
-							case 2://TODO
-								break;
+							case 2:
+								_commonGraphUpdates = Algorithms.Dijkstra((byte)_nodeCount, _edgeMap, _sourcePicker.Index, _destPicker.Index).ToArray();
+								goto default;
 							case 4://TODO
 								break;
 							case 3://TODO
 								_state++;
 								break;
 							default:
-								_lastUpdateIndex = _commonGraphUpdates.Length;
-								_currentUpdateIndex = 1;
-								_logText.Text = _commonGraphUpdates[0].UpdateLog;
-								_commonGraphShowcase.Update(_commonGraphUpdates[0]);
+								ResetAlgo();
 								break;
 						}
 					}
@@ -399,6 +390,15 @@ namespace GTT
 				if (_state < State.NormalShowcase)
 					_submitNodes.Draw(gt);
 			}
+		}
+		private void ResetAlgo()
+		{
+			_commonGraphShowcase.Reset();
+			_lastUpdateIndex = _commonGraphUpdates.Length;
+			_currentUpdateIndex = 1;
+			_logText.Text = _commonGraphUpdates[0].UpdateLog;
+			_commonGraphShowcase.Update(_commonGraphUpdates[0]);
+			_next_update.Enabled = true;
 		}
 	}
 }
