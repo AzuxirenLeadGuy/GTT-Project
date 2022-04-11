@@ -10,7 +10,7 @@ namespace GTT
 		private enum State : byte { StartScreen, SelectGraphProperties, ArrangeGraph, SelectEdges, SelectAlgorithm, NormalShowcase, FloydShowcase, }
 		private State _state;
 		private readonly Button _exitButton, _demoButton, _submitNodes, _backButton, _add_edge, _cancel_edge, _next_update, _reset_update;
-		private TextBox _welcomeText, _selectNodes, _logText, _actionlogText, _selectAlgo;
+		private TextBox _welcomeText, _selectNodes, _logText, _actionlogText, _selectAlgo, _select_source, _select_dest;
 		private readonly Checkbox _directedbox, _weightedbox;
 		private Rectangle _graphDragRegion;
 		private readonly Picker _nodeCountPicker;
@@ -309,9 +309,14 @@ namespace GTT
 						dx[_nodeCount] = "None";
 						algobd.Y -= 2 * algobd.Height;
 						algobd.Width /= 3;
+						algobd.X -= algobd.Width;
+						_select_source = new TextBox(algobd, "Source: ", GameApp.CommonData.Font, Color.Black);
+						algobd.X += algobd.Width;
 						_sourcePicker = new(sx, algobd);
 						algobd.X += 2 * algobd.Width;
 						_destPicker = new(dx, algobd);
+						algobd.X += algobd.Width;
+						_select_dest = new TextBox(algobd, ": Destination", GameApp.CommonData.Font);
 					}
 					else if (_state == State.SelectAlgorithm)
 					{
@@ -405,6 +410,8 @@ namespace GTT
 					{
 						_sourcePicker.Draw(gt);
 						_destPicker.Draw(gt);
+						_select_source.Draw(GameApp.CommonData.Batch);
+						_select_dest.Draw(GameApp.CommonData.Batch);
 					}
 					break;
 				case State.NormalShowcase:

@@ -10,6 +10,5 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Azuxiren.MG\Azuxiren.MG.csproj" />
-    <ProjectReference Include="..\GraphAlgos\GraphAlgos.csproj" />
   </ItemGroup>
 </Project>
