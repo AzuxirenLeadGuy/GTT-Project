@@ -44,7 +44,7 @@ namespace GTT
 			_edgelines = new();
 			_state = State.StartScreen;
 			var bound = GameApp.CommonData.ScreenBounds;
-			_welcomeText = new(new Rectangle(0, 0, bound.Width, bound.Height / 4), "Welcome to Graph Algorithms Demo", GameApp.CommonData.FormalFont, Color.Black, Alignment.Centered);
+			_welcomeText = new(new Rectangle(0, 0, bound.Width, bound.Height / 4), "  Welcome to Graph\n   Algorithms Demo  ", GameApp.CommonData.FormalFont, Color.Black, Alignment.Centered);
 			bound = new Rectangle(0, _welcomeText.Bounds.Bottom, bound.Width, bound.Height - _welcomeText.Bounds.Bottom);
 			Rectangle x = new(0, 0, 140, 60);
 			Global.SetCenter(ref x, bound);
@@ -63,7 +63,7 @@ namespace GTT
 			y.Width -= 50;
 			_selectNodes = new(new(y.X - 150, y.Y - 150, y.Width + 150, y.Height + 300), "Number of nodes", GameApp.CommonData.Font);
 			y.X += x.Width + 20;
-			_nodeCountPicker = new Picker(Enumerable.Range(2, 19).Select(x => x.ToString()).ToArray(), y);
+			_nodeCountPicker = new Picker(Enumerable.Range(2, 25).Select(x => x.ToString()).ToArray(), y);
 			y.X -= 10;
 			y.Y += 2 * x.Height + 40;
 			_submitNodes = new(y, "Submit");

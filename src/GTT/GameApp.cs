@@ -10,7 +10,7 @@ namespace GTT
 		public GameApp(IInputManager inputManager)
 		{
 			Content.RootDirectory = "Content";
-			CommonData.ClearColor = Color.LightGray;
+			CommonData.ClearColor = new Color(0xc5, 0xca, 0xe9);
 			IsMouseVisible = true;
 			CommonData.Input = inputManager;
 		}
@@ -26,7 +26,7 @@ namespace GTT
 			CommonData.Circle = Content.Load<Texture2D>("circle");
 			Rectangle screen = Window.ClientBounds;
 			CommonData.CurrentApp = this;
-			CommonData.GraphDrawingBackColor = Color.DarkGreen;
+			CommonData.GraphDrawingBackColor = new Color(0x30, 0x3f, 0x9f);
 			CommonData.ScreenBounds = new(0, 0, screen.Width, screen.Height);
 			base.LoadContent();
 		}
