@@ -23,7 +23,7 @@ The project will be developed using C#, with [.NET SDK 6](https://dotnet.microso
 
 ## Running the application
 
-To run the application, you can download the binary from the Releases (highly recommended), or build the program in your machine.
+To run the application, you can download the binary from the [Releases](https://github.com/AzuxirenLeadGuy/GTT-Project/releases) (highly recommended), or build the program in your machine.
 
 The executable to run is `GTT.GL.exe` for windows, and `GTT.GL` for linux and mac.
 
