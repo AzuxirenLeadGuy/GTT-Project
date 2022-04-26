@@ -2,11 +2,18 @@
 # Visit https://bit.ly/cffinit to generate yours today!
 
 cff-version: 1.2.0
-title: Graph Theory Project
+title: Graph Algorithms Visualizer
 message: >-
-  Repository for the graph algorithm visualizer
+  Repository for the Graph Algorithm Visualizer
   project
 type: software
 authors:
   - given-names: Ashish Jacob Sam
-    email: sam4lordjesus@outlook.com
+    email: sam.1@iitj.ac.in
+repository-code: 'https://github.com/AzuxirenLeadGuy/GTT-Project'
+url: >-
+  https://github.com/AzuxirenLeadGuy/GTT-Project/releases/tag/GTT_GL
+license: MIT
+commit: 67c8342907ce8d6d78ae36162731563c592863ff
+version: '1.0'
+date-released: '2022-04-17'
