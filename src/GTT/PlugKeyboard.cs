@@ -1,5 +1,4 @@
-using Azuxiren.MG;
-using Azuxiren.MG.Menu;
+using Azuxiren.MG.Drawing;
 
 using Microsoft.Xna.Framework;
 namespace GTT
@@ -10,16 +9,16 @@ namespace GTT
 		private readonly Button[] _numericPads;
 		private int _value;
 		public int Value { get => _value; set => _box.Text = (_value = value).ToString(); }
-		public PlugKeyboard(Rectangle bds, byte defaultValue = 0)
+		public PlugKeyboard(CommonDataStruct settings, Rectangle bds, byte defaultValue = 0)
 		{
 			_numericPads = new Button[11];
 			for (int i = 0; i < 10; i++)
 			{
-				_numericPads[i] = new Button(Rectangle.Empty, i.ToString());
+				_numericPads[i] = new Button(settings, i.ToString());
 			}
-			_numericPads[10] = new Button(Rectangle.Empty, "Clear");
+			_numericPads[10] = new Button(settings, "Clear");
 			_value = defaultValue;
-			_box = new TextBox(Rectangle.Empty, _value.ToString(), GameApp.CommonData.Font);
+			_box = new TextBox(Rectangle.Empty, _value.ToString(), settings.Font, Color.Black);
 			Set(bds);
 		}
 		public void Set(Rectangle bds)
@@ -39,23 +38,23 @@ namespace GTT
 			_numericPads[10].Set(new Rectangle(x + uw, y, 2 * uw, uh));
 			_box.Bounds = new Rectangle(bds.X, bds.Y, bds.Width, uh);
 		}
-		public void Draw(GameTime gt)
+		public void Draw(IBatchDrawer drawer)
 		{
-			for (int i = 0; i < 11; i++) _numericPads[i].Draw(gt);
-			_box.Draw(GameApp.CommonData.Batch);
+			for (int i = 0; i < 11; i++) _numericPads[i].Draw(drawer);
+			_box.Draw(drawer);
 		}
 		public void Update(GameTime gt)
 		{
 			bool change = false;
 			for (int i = 0; i < 10; i++)
 			{
-				if (_numericPads[i].ClickedOnUpdate(gt))
+				if (_numericPads[i].Update(gt) == Azuxiren.MG.Menu.BaseButton.BaseButtonState.JustReleased)
 				{
 					_value = (_value * 10) + i;
 					change = true;
 				}
 			}
-			if (_numericPads[10].ClickedOnUpdate(gt))
+			if (_numericPads[10].Update(gt) == Azuxiren.MG.Menu.BaseButton.BaseButtonState.JustReleased)
 			{
 				_value = 0;
 				change = true;

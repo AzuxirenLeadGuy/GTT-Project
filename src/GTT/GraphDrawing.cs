@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 
 using Azuxiren.MG;
+using Azuxiren.MG.Drawing;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -11,32 +12,41 @@ namespace GTT
 	{
 		public (TextBox Box, Color color)[] Nodes;
 		public Dictionary<(byte From, byte To), LineObject> Edges;
-		private readonly SpriteBatch _batch;
 		private readonly Texture2D _patch;
 		public string Log;
-		public GraphDrawing(Rectangle[] pos, Dictionary<(byte From, byte To), LineObject> edges)
+		public GraphDrawing(
+			Rectangle[] pos,
+			Dictionary<(byte From, byte To), LineObject> edges,
+			CommonDataStruct settings)
 		{
 			int i, l = pos.Length;
 			Nodes = new (TextBox Box, Color color)[l];
-			for (i = 0; i < l; i++) Nodes[i] = (new TextBox(pos[i], GameApp.GetLabel((byte)i), GameApp.CommonData.Font, Color.Black), Color.White);
+			for (i = 0; i < l; i++) Nodes[i] = (
+				new TextBox(
+					pos[i],
+					Algorithms.GetLabel((byte)i),
+					settings.Font,
+					Color.Black
+				),
+				Color.White
+			);
 			Edges = edges;
-			_batch = GameApp.CommonData.Batch;
-			_patch = GameApp.CommonData.Circle;
+			_patch = settings.Circle;
 			Log = "";
 		}
-		public void Draw()
+		public readonly void Draw(IBatchDrawer batch)
 		{
 			foreach (var edge in Edges)
 			{
-				edge.Value.Draw(_batch);
+				edge.Value.Draw(batch);
 			}
 			for (int i = Nodes.Length - 1; i >= 0; i--)
 			{
-				_batch.Draw(_patch, Nodes[i].Box.Bounds, Nodes[i].color);
-				Nodes[i].Box.Draw(_batch);
+				batch.Draw(_patch, destination: Nodes[i].Box.Bounds, color: Nodes[i].color);
+				Nodes[i].Box.Draw(batch);
 			}
 		}
-		public void Reset()
+		public readonly void Reset()
 		{
 			for (int i = Nodes.Length - 1; i >= 0; i--)
 			{

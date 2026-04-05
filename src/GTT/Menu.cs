@@ -1,4 +1,4 @@
-using Azuxiren.MG;
+using Azuxiren.MG.Drawing;
 
 using Microsoft.Xna.Framework;
 
@@ -14,25 +14,34 @@ namespace GTT
 		}
 		private readonly IMenuItem[] _items;
 		private readonly int _count;
-		public void Draw(GameTime gt)
-		{
-			for (int i = 0; i < _count; i++) _items[i].Draw(gt);
-		}
 		public void Set(Rectangle bds)
 		{
 			int ih = bds.Height / _count;
-			Point cen = new();
-			cen.X = (bds.Right + bds.Left) / 2;
-			cen.Y = bds.Y + (ih / 2);
+			Point cen = new()
+			{
+				X = (bds.Right + bds.Left) / 2,
+				Y = bds.Y + (ih / 2)
+			};
 			Point dim = new((ih * 5) / 6, (bds.Width * 5) / 6);
 			for (int i = 0; i < _count; i++, cen.Y += ih)
 			{
-				_items[i].Set(Global.SetCenter(cen, dim));
+				_items[i].Set(Azuxiren.MG.Drawing.DrawingExtensions.SetCenter(cen, dim));
 			}
 		}
-		public void Update(GameTime gt)
+		public static void Set(Rectangle bds, params IMenuItem[] items)
 		{
-			for (int i = 0; i < _count; i++) _items[i].Update(gt);
+			var count = items.Length;
+			int ih = bds.Height / count;
+			Point cen = new()
+			{
+				X = (bds.Right + bds.Left) / 2,
+				Y = bds.Y + (ih / 2)
+			};
+			Point dim = new((ih * 5) / 6, (bds.Width * 5) / 6);
+			for (int i = 0; i < count; i++, cen.Y += ih)
+			{
+				items[i].Set(Azuxiren.MG.Drawing.DrawingExtensions.SetCenter(cen, dim));
+			}
 		}
 	}
 }

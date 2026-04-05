@@ -1,24 +1,22 @@
-using Azuxiren.MG;
+using Azuxiren.MG.Components;
+using Azuxiren.MG.Drawing;
 
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 
 namespace GTT
 {
-	public struct LoadingScreen : IScreen
+	public struct LoadingScreen : IGameStage<CommonDataStruct>
 	{
-		internal SpriteBatch Batch;
-		internal Texture2D Patch;
-		public void LoadContent()
-		{
-			Batch = GameApp.CommonData.Batch;
-			Patch = GameApp.CommonData.Patch;
-		}
-		public void Update(GameTime gt)
-		{
-		}
-		public void Draw(GameTime gt)
-		{
-		}
+		public readonly void Draw(
+			GameTime gt,
+			in RenderTargetDrawer drawer,
+			in CommonDataStruct settings
+		)
+		{ }
+
+		public readonly GameUpdateResult Update(
+			GameTime gt,
+			ref CommonDataStruct settings
+		) => GameUpdateResult.NoAction;
 	}
 }

@@ -1,11 +1,19 @@
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+
 using Azuxiren.MG;
+using Azuxiren.MG.Components;
+using Azuxiren.MG.Drawing;
+using Azuxiren.MG.Menu;
+
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+
+using static GTT.MovableObject;
 
 namespace GTT
 {
-	public class WelcomeScreen : IScreen
+	public class WelcomeScreen : IGameStage<CommonDataStruct>
 	{
 		private enum State : byte { StartScreen, SelectGraphProperties, ArrangeGraph, SelectEdges, SelectAlgorithm, NormalShowcase, FloydShowcase, }
 		private State _state;
@@ -28,7 +36,7 @@ namespace GTT
 		private FloydWarshallInfo _floydWarshallInfo;
 		private FloydWarshallInfoUpdate[] _floydUpdates;
 		private int _currentUpdateIndex, _lastUpdateIndex;
-		public WelcomeScreen()
+		public WelcomeScreen(in Game game, CommonDataStruct settings)
 		{
 			_movableNodes = null!;
 			_edgeMap = null!;
@@ -40,71 +48,115 @@ namespace GTT
 			_floydWarshallInfo = default;
 			_commonGraphShowcase = default;
 			_currentUpdateIndex = _lastUpdateIndex = 0;
-			_nodeButtons = System.Array.Empty<Button>();
-			_edgelines = new();
+			_nodeButtons = [];
+			_edgelines = [];
 			_state = State.StartScreen;
-			var bound = GameApp.CommonData.ScreenBounds;
-			_welcomeText = new(new Rectangle(0, 0, bound.Width, bound.Height / 4), "  Welcome to Graph\n   Algorithms Demo  ", GameApp.CommonData.FormalFont, Color.Black, Alignment.Centered);
+			var bound = new Rectangle(0, 0, settings.GameWidth, settings.GameHeight);
+			_welcomeText = new(
+				new Rectangle(0, 0, bound.Width, bound.Height / 4), 
+				"  Welcome to Graph\n   Algorithms Demo  ", 
+				settings.FormalFont, 
+				Color.Black, 
+				TextBox.TextAlignment.Centered
+			);
 			bound = new Rectangle(0, _welcomeText.Bounds.Bottom, bound.Width, bound.Height - _welcomeText.Bounds.Bottom);
-			Rectangle x = new(0, 0, 140, 60);
-			Global.SetCenter(ref x, bound);
-			_exitButton = new Button(new Rectangle(x.X, x.Bottom + 20, x.Width, x.Height), "Exit"); ;
-			_exitButton.OnRelease += (o, e) => GameApp.CommonData.CurrentApp.Exit();
-			_demoButton = new(x, "Prepare\nGraph");
-			_demoButton.OnRelease += (o, e) => _state = State.SelectGraphProperties;
-			Rectangle y = x;
-			y.Width += 50;
-			y.Y -= 2 * x.Height + 20;
-			_directedbox = new(y, "Directed");
-			y.Y += x.Height + 10;
-			_weightedbox = new(y, "Weighted");
-			y.Y += x.Height + 10;
-			y.X -= x.Width + 10;
-			y.Width -= 50;
-			_selectNodes = new(new(y.X - 150, y.Y - 150, y.Width + 150, y.Height + 300), "Number of nodes", GameApp.CommonData.Font);
-			y.X += x.Width + 20;
-			_nodeCountPicker = new Picker(Enumerable.Range(2, 25).Select(x => x.ToString()).ToArray(), y);
-			y.X -= 10;
-			y.Y += 2 * x.Height + 40;
-			_submitNodes = new(y, "Submit");
-			y.Y += x.Height + 20;
-			_backButton = new Button(y, "Back");
-			_graphDragRegion = new(0, 0, GameApp.CommonData.ScreenBounds.Width * 8 / 10, _submitNodes.Bounds.Top);
+			Rectangle menu_region_x = DrawingExtensions.SetCenter(
+				bound.Center, 
+				new(140, 60)
+			);
+			_exitButton = new Button(
+				settings,
+				"Exit",
+				new Rectangle(
+					menu_region_x.X, 
+					menu_region_x.Bottom + 20, 
+					menu_region_x.Width, 
+					menu_region_x.Height
+				)
+			);
+			// _exitButton.StateChanged += (o, e) =>
+			// {
+			// 	if (e.Current == Azuxiren.MG.Menu.Menu.ComponentState.Release)
+			// 		GameApp.CommonData.CurrentApp.Exit();
+			// };
+			_demoButton = new(settings, "Prepare\nGraph", menu_region_x);
+			Rectangle menu_region_y = menu_region_x;
+			menu_region_y.Width += 50;
+			menu_region_y.Y -= 2 * menu_region_x.Height + 20;
+			_directedbox = new(settings, "Directed", menu_region_y);
+			menu_region_y.Y += menu_region_x.Height + 10;
+			_weightedbox = new(settings, "Weighted", menu_region_y);
+			menu_region_y.Y += menu_region_x.Height + 10;
+			menu_region_y.X -= menu_region_x.Width + 10;
+			menu_region_y.Width -= 50;
+			_selectNodes = new(
+				new(
+					menu_region_y.X - 150, 
+					menu_region_y.Y - 150, 
+					menu_region_y.Width + 150, 
+					menu_region_y.Height + 300
+				), 
+				"Number of nodes", 
+				settings.Font,
+				Color.Black
+			);
+			menu_region_y.X += menu_region_x.Width + 20;
+			_nodeCountPicker = new Picker([.. Enumerable.Range(2, 25).Select(x => x.ToString())], menu_region_y, settings);
+			menu_region_y.X -= 10;
+			menu_region_y.Y += 2 * menu_region_x.Height + 40;
+			_submitNodes = new(settings, "Submit", menu_region_y);
+			menu_region_y.Y += menu_region_x.Height + 20;
+			_backButton = new Button(settings, "Back", menu_region_y);
+			_graphDragRegion = new(0, 0, settings.GameWidth * 8 / 10, _submitNodes.Bounds.Top);
 			_manager = new() { Region = _graphDragRegion };
-			y.X = _graphDragRegion.Right;
-			y.Width = GameApp.CommonData.ScreenBounds.Width - _graphDragRegion.Right;
-			y.Y = GameApp.CommonData.ScreenBounds.Height - (_graphDragRegion.Height / 2);
-			y.Height = _graphDragRegion.Height / 2;
-			_keyboard = new PlugKeyboard(y);
-			_submitNodes.Bounds.X = y.X - _submitNodes.Bounds.Width;
-			_submitNodes.Set(_submitNodes.Bounds);
-			_backButton.Bounds.X = _submitNodes.Bounds.X;
-			_backButton.Set(_backButton.Bounds);
-			y.Y /= 2;
-			y.Height = y.Y / 4;
-			_add_edge = new(y, "OK");
-			_next_update = new(y, "Next");
-			y.Y += 2 * y.Height;
-			_cancel_edge = new(y, "Cancel");
-			_reset_update = new(y, "Reset");
-			y = new Rectangle(0, _submitNodes.Bounds.Y, _submitNodes.Bounds.X, GameApp.CommonData.ScreenBounds.Height - _graphDragRegion.Height);
-			y.Height /= 2;
-			_logText = new TextBox(y, "", GameApp.CommonData.Font, Color.Black);
-			y.Y += y.Height;
-			_actionlogText = new TextBox(y, "", GameApp.CommonData.Font, Color.Black);
+			menu_region_y.X = _graphDragRegion.Right;
+			menu_region_y.Width = settings.GameWidth - _graphDragRegion.Right;
+			menu_region_y.Y = settings.GameHeight - (_graphDragRegion.Height / 2);
+			menu_region_y.Height = _graphDragRegion.Height / 2;
+			_keyboard = new PlugKeyboard(settings, menu_region_y);
+			var subbounds = _submitNodes.Bounds;
+			subbounds.X = menu_region_y.X - _submitNodes.Bounds.Width;
+			_submitNodes.Set(subbounds);
+			subbounds = _backButton.Bounds;
+			subbounds.X = _submitNodes.Bounds.X;
+			_backButton.Set(subbounds);
+			menu_region_y.Y /= 2;
+			menu_region_y.Height = menu_region_y.Y / 4;
+			_add_edge = new(settings, "OK", menu_region_y);
+			_next_update = new(settings, "Next", menu_region_y);
+			menu_region_y.Y += 2 * menu_region_y.Height;
+			_cancel_edge = new(settings, "Cancel", menu_region_y);
+			_reset_update = new(settings, "Reset", menu_region_y);
+			menu_region_y = new Rectangle(
+				0, 
+				_submitNodes.Bounds.Y, 
+				_submitNodes.Bounds.X, 
+				settings.GameHeight - _graphDragRegion.Height
+			);
+			menu_region_y.Height /= 2;
+			_logText = new TextBox(menu_region_y, "", settings.Font, Color.Black);
+			menu_region_y.Y += menu_region_y.Height;
+			_actionlogText = new TextBox(menu_region_y, "", settings.Font, Color.Black);
 		}
-		public void LoadContent() { }
-		public void Update(GameTime gt)
+		public GameUpdateResult Update(GameTime gt, ref CommonDataStruct settings)
 		{
+			settings.Input.Update();
 			int i;
 			switch (_state)
 			{
 				#region 1-Update
 				case State.StartScreen:
-					_exitButton.Update(gt);
+					if(_exitButton.Update(gt) == BaseButton.BaseButtonState.JustReleased)
+					{
+						return GameUpdateResult.ExitRequest;
+					}
+					if(_demoButton.Update(gt) == BaseButton.BaseButtonState.JustReleased)
+					{
+						_state = State.SelectGraphProperties;
+					}
 					_demoButton.Update(gt);
-					_backButton.Enabled = true;
-					_submitNodes.Enabled = true;
+					_backButton.EnabledProperty = true;
+					_submitNodes.EnabledProperty = true;
 					break;
 				#endregion
 				#region 2-Update
@@ -126,7 +178,7 @@ namespace GTT
 				case State.SelectEdges:
 					for (i = 0; i < _nodeCount; i++)
 					{
-						if (_nodeButtons[i].ClickedOnUpdate(gt))
+						if (_nodeButtons[i].Update(gt) == BaseButton.BaseButtonState.JustReleased)
 						{
 							if (_nodeSel1 == 255)
 								_nodeSel1 = (byte)i;
@@ -149,7 +201,7 @@ namespace GTT
 						_logText.Text = "Select the destination node     ";
 					else
 					{
-						string keytext = $"({GameApp.GetLabel(_nodeSel1)},{GameApp.GetLabel(_nodeSel2)})";
+						string keytext = $"({Algorithms.GetLabel(_nodeSel1)},{Algorithms.GetLabel(_nodeSel2)})";
 						if (_weightedbox.IsChecked)
 						{
 							_keyboard.Update(gt);
@@ -157,10 +209,10 @@ namespace GTT
 						}
 						else
 							_logText.Text = $"Select OK to add edge {keytext}      ";
-						if (_add_edge.ClickedOnUpdate(gt))
+						if (_add_edge.Update(gt) == BaseButton.BaseButtonState.JustReleased)
 						{
 							var key = (_nodeSel1, _nodeSel2);
-							keytext = $"({GameApp.GetLabel(key._nodeSel1)},{GameApp.GetLabel(key._nodeSel2)})";
+							keytext = $"({Algorithms.GetLabel(key._nodeSel1)},{Algorithms.GetLabel(key._nodeSel2)})";
 							if ((_directedbox.IsChecked == false) && (key._nodeSel1 > key._nodeSel2))
 								(key._nodeSel1, key._nodeSel2) = (key._nodeSel2, key._nodeSel1);
 							if (_edgeMap[_nodeSel1, _nodeSel2] != 0)
@@ -182,7 +234,7 @@ namespace GTT
 									if (_weightedbox.IsChecked)
 									{
 										_edgelines.Remove(key);
-										_edgelines.Add(key, CreateLine(key));
+										_edgelines.Add(key, CreateLine(key, settings));
 									}
 									_actionlogText.Text = $"Edge is updated in the graph.\n{keytext} with weight {_keyboard.Value}";
 									_actionlogText.TextColor = Color.DarkGreen;
@@ -210,14 +262,14 @@ namespace GTT
 									_edgeMap[_nodeSel1, _nodeSel2] = (byte)_keyboard.Value;
 									if (_directedbox.IsChecked == false)
 										_edgeMap[_nodeSel2, _nodeSel1] = _edgeMap[_nodeSel1, _nodeSel2];
-									_edgelines.Add(key, CreateLine(key));
-									_actionlogText.Text = $"Edge is added to the graph.\n({GameApp.GetLabel(key._nodeSel1)}, {GameApp.GetLabel(key._nodeSel1)}) with weight {_keyboard.Value}";
+									_edgelines.Add(key, CreateLine(key, settings));
+									_actionlogText.Text = $"Edge is added to the graph.\n({Algorithms.GetLabel(key._nodeSel1)}, {Algorithms.GetLabel(key._nodeSel1)}) with weight {_keyboard.Value}";
 									_actionlogText.TextColor = Color.DarkGreen;
 								}
 							}
 							_nodeSel1 = _nodeSel2 = 255;
 						}
-						if (_cancel_edge.ClickedOnUpdate(gt))
+						if (_cancel_edge.Update(gt) == BaseButton.BaseButtonState.JustReleased)
 							_nodeSel1 = _nodeSel2 = 255;
 					}
 					break;
@@ -231,32 +283,32 @@ namespace GTT
 				#endregion
 				#region 6-Update
 				case State.NormalShowcase:
-					if (_next_update.ClickedOnUpdate(gt))
+					if (_next_update.Update(gt) == BaseButton.BaseButtonState.JustReleased)
 					{
 						_logText.Text = _commonGraphUpdates[_currentUpdateIndex].UpdateLog;
 						_commonGraphShowcase.Update(_commonGraphUpdates[_currentUpdateIndex++]);
-						if (_currentUpdateIndex == _lastUpdateIndex) _next_update.Enabled = false;
+						if (_currentUpdateIndex == _lastUpdateIndex) _next_update.EnabledProperty = false;
 					}
-					if (_reset_update.ClickedOnUpdate(gt))
+					if (_reset_update.Update(gt) == BaseButton.BaseButtonState.JustReleased)
 						ResetAlgo();
 					break;
 				#endregion
 				#region 7-Update
 				case State.FloydShowcase:
-					if (_next_update.ClickedOnUpdate(gt))
+					if (_next_update.Update(gt) == BaseButton.BaseButtonState.JustReleased)
 					{
 						_logText.Text = _floydUpdates[_currentUpdateIndex].Log;
 						_floydWarshallInfo.Update(_floydUpdates[_currentUpdateIndex++]);
-						if (_currentUpdateIndex == _lastUpdateIndex) _next_update.Enabled = false;
+						if (_currentUpdateIndex == _lastUpdateIndex) _next_update.EnabledProperty = false;
 					}
-					if (_reset_update.ClickedOnUpdate(gt))
-						ResetFloyd();
+					if (_reset_update.Update(gt) == BaseButton.BaseButtonState.JustReleased)
+						ResetFloyd(settings);
 					break;
-					#endregion
+				#endregion
 			}
 			if (_state != State.StartScreen)
 			{
-				if (_submitNodes.ClickedOnUpdate(gt))
+				if (_submitNodes.Update(gt) == BaseButton.BaseButtonState.JustReleased)
 				{
 					byte x;
 					if (_state == State.SelectGraphProperties)
@@ -269,9 +321,9 @@ namespace GTT
 						Rectangle pos = new(10, 10, 40, 40);
 						for (x = 0; x < _nodeCount; x++)
 						{
-							string title = GameApp.GetLabel(x);
-							_movableNodes[x] = new(_manager, title, pos, Color.White);
-							_nodeButtons[x] = new Button(pos, title, circle: true);
+							string title = Algorithms.GetLabel(x);
+							_movableNodes[x] = new(_manager, title, pos, Color.White, settings.Circle, settings);
+							_nodeButtons[x] = new Button(settings, title, pos, circle: true);
 							pos.X += 50;
 							if (pos.Right >= _graphDragRegion.Width)
 							{
@@ -292,51 +344,53 @@ namespace GTT
 					}
 					else if (_state == State.SelectEdges)
 					{
-						Rectangle algobd = new(0, 0, _graphDragRegion.Width / 2, 80);
-						Global.SetCenter(ref algobd, GameApp.CommonData.ScreenBounds);
+						Rectangle algobd = DrawingExtensions.SetCenter(
+							new(settings.GameWidth, settings.GameHeight), 
+							new(_graphDragRegion.Width / 2, 80)
+						);
 						string[] options = _directedbox.IsChecked
-							? (new string[] { "Depth First Search", "Breadth First Search", "Dijkstra Algorithm", "Floyd-Warshall Algorithm" })
-							: (new string[] { "Depth First Search", "Breadth First Search", "Dijkstra Algorithm", "Floyd-Warshall Algorithm", "Kruskal's Algorithm" });
-						_algoPicker = new(options, algobd);
-						_commonGraphShowcase = new(_movableNodes.Select(x => x.Bounds).ToArray(), _edgelines);
+							? ["Depth First Search", "Breadth First Search", "Dijkstra Algorithm", "Floyd-Warshall Algorithm"]
+							: ["Depth First Search", "Breadth First Search", "Dijkstra Algorithm", "Floyd-Warshall Algorithm", "Kruskal's Algorithm"];
+						_algoPicker = new(options, algobd, settings);
+						_commonGraphShowcase = new([.. _movableNodes.Select(x => x.Bounds)], _edgelines, settings);
 						algobd.Y -= 2 * algobd.Height;
-						_selectAlgo = new TextBox(algobd, "Select the algorithm", GameApp.CommonData.Font);
+						_selectAlgo = new TextBox(algobd, "Select the algorithm", settings.Font, Color.White);
 						string[] sx = new string[_nodeCount], dx = new string[_nodeCount + 1];
 						for (byte j = 0; j < _nodeCount; j++)
 						{
-							sx[j] = dx[j] = GameApp.GetLabel(j);
+							sx[j] = dx[j] = Algorithms.GetLabel(j);
 						}
 						dx[_nodeCount] = "None";
 						algobd.Y -= 2 * algobd.Height;
 						algobd.Width /= 3;
 						algobd.X -= algobd.Width;
-						_select_source = new TextBox(algobd, "Source: ", GameApp.CommonData.Font, Color.Black);
+						_select_source = new TextBox(algobd, "Source: ", settings.Font, Color.Black);
 						algobd.X += algobd.Width;
-						_sourcePicker = new(sx, algobd);
+						_sourcePicker = new(sx, algobd, settings);
 						algobd.X += 2 * algobd.Width;
-						_destPicker = new(dx, algobd);
+						_destPicker = new(dx, algobd, settings);
 						algobd.X += algobd.Width;
-						_select_dest = new TextBox(algobd, ": Destination", GameApp.CommonData.Font);
+						_select_dest = new TextBox(algobd, ": Destination", settings.Font, Color.White);
 					}
 					else if (_state == State.SelectAlgorithm)
 					{
 						switch (_algoPicker.Index)
 						{
 							case 0:
-								_commonGraphUpdates = Algorithms.DepthFirstSearch((byte)_nodeCount, _edgeMap, _sourcePicker.Index, _destPicker.Index).ToArray();
+								_commonGraphUpdates = [.. Algorithms.DepthFirstSearch((byte)_nodeCount, _edgeMap, _sourcePicker.Index, _destPicker.Index)];
 								goto default;
 							case 1:
-								_commonGraphUpdates = Algorithms.BreadthFirstSearch((byte)_nodeCount, _edgeMap, _sourcePicker.Index, _destPicker.Index).ToArray();
+								_commonGraphUpdates = [.. Algorithms.BreadthFirstSearch((byte)_nodeCount, _edgeMap, _sourcePicker.Index, _destPicker.Index)];
 								goto default;
 							case 2:
-								_commonGraphUpdates = Algorithms.Dijkstra((byte)_nodeCount, _edgeMap, _sourcePicker.Index, _destPicker.Index).ToArray();
+								_commonGraphUpdates = [.. Algorithms.Dijkstra((byte)_nodeCount, _edgeMap, _sourcePicker.Index, _destPicker.Index)];
 								goto default;
 							case 4:
-								_commonGraphUpdates = Algorithms.Kruskal((byte)_nodeCount, _edgeMap).ToArray();
+								_commonGraphUpdates = [.. Algorithms.Kruskal((byte)_nodeCount, _edgeMap)];
 								goto default;
 							case 3:
-								_floydUpdates = Algorithms.FloydWarshall((byte)_nodeCount, _edgeMap).ToArray();
-								ResetFloyd();
+								_floydUpdates = [.. Algorithms.FloydWarshall((byte)_nodeCount, _edgeMap)];
+								ResetFloyd(settings);
 								_state++;
 								break;
 							default:
@@ -346,7 +400,7 @@ namespace GTT
 					}
 					_state++;
 				}
-				if (_backButton.ClickedOnUpdate(gt))
+				if (_backButton.State == BaseButton.BaseButtonState.JustReleased)
 				{
 					if (_state == State.FloydShowcase) _state--;
 					_state--;
@@ -354,86 +408,110 @@ namespace GTT
 					_actionlogText.Text = "";
 					if (_state == State.StartScreen)
 					{
-						_backButton.Enabled = false;
-						_submitNodes.Enabled = false;
+						_backButton.EnabledProperty = false;
+						_submitNodes.EnabledProperty = false;
 					}
 				}
 			}
+			return GameUpdateResult.NoAction;
 		}
-		public void Draw(GameTime gt)
+		public void Draw(GameTime gt, in RenderTargetDrawer drawer_tgt, in CommonDataStruct settings)
 		{
 			byte i;
-			switch (_state)
-			{
-				case State.StartScreen:
-					_welcomeText.Draw(GameApp.CommonData.Batch);
-					_demoButton.Draw(gt);
-					_exitButton.Draw(gt);
-					break;
-				case State.SelectGraphProperties:
-					_selectNodes.Draw(GameApp.CommonData.Batch);
-					_directedbox.Draw(gt);
-					_weightedbox.Draw(gt);
-					_nodeCountPicker.Draw(gt);
-					break;
-				case State.ArrangeGraph:
-					GameApp.CommonData.Batch.Draw(GameApp.CommonData.Patch, _graphDragRegion, GameApp.CommonData.GraphDrawingBackColor);
-					for (i = 0; i < _nodeCount; i++)
+			var patch = settings.Patch;
+			var color = settings.GraphDrawingBackColor;
+			drawer_tgt.DrawToTarget(
+				(drawer) => {
+					
+					switch (_state)
 					{
-						_movableNodes[i].Draw();
+						case State.StartScreen:
+							_welcomeText.Draw(drawer);
+							_demoButton.Draw(drawer);
+							_exitButton.Draw(drawer);
+							break;
+						case State.SelectGraphProperties:
+							_selectNodes.Draw(drawer);
+							_directedbox.Draw(drawer);
+							_weightedbox.Draw(drawer);
+							_nodeCountPicker.Draw(drawer);
+							break;
+						case State.ArrangeGraph:
+							drawer.Draw(
+								patch, 
+								_graphDragRegion,
+								color: color
+							);
+							for (i = 0; i < _nodeCount; i++)
+							{
+								_movableNodes[i].Draw(drawer);
+							}
+							_logText.Draw(drawer);
+							break;
+						case State.SelectEdges:
+							drawer.Draw(
+								patch, 
+								_graphDragRegion,
+								color: color
+							);
+							foreach (var edge in _edgelines)
+							{
+								edge.Value.Draw(drawer);
+							}
+							for (i = 0; i < _nodeCount; i++)
+							{
+								_nodeButtons[i].Draw(drawer);
+							}
+							if (_nodeSel1 != 255 && _nodeSel2 != 255)
+							{
+								if (_weightedbox.IsChecked) _keyboard.Draw(drawer);
+								_add_edge.Draw(drawer);
+								_cancel_edge.Draw(drawer);
+							}
+							_logText.Draw(drawer);
+							_actionlogText.Draw(drawer);
+							break;
+						case State.SelectAlgorithm:
+							_selectAlgo.Draw(drawer);
+							_algoPicker.Draw(drawer);
+							if (_algoPicker.Index < 3)
+							{
+								_sourcePicker.Draw(drawer);
+								_destPicker.Draw(drawer);
+								_select_source.Draw(drawer);
+								_select_dest.Draw(drawer);
+							}
+							break;
+						case State.NormalShowcase:
+							drawer.Draw(
+								patch, 
+								_graphDragRegion,
+								color: color
+							);
+							_commonGraphShowcase.Draw(drawer);
+							goto default;
+						case State.FloydShowcase:
+							drawer.Draw(
+								patch, 
+								_graphDragRegion, 
+								color: color
+							);
+							_floydWarshallInfo.Draw(drawer);
+							goto default;
+						default:
+							_next_update.Draw(drawer);
+							_reset_update.Draw(drawer);
+							_logText.Draw(drawer);
+							break;
 					}
-					_logText.Draw(GameApp.CommonData.Batch);
-					break;
-				case State.SelectEdges:
-					GameApp.CommonData.Batch.Draw(GameApp.CommonData.Patch, _graphDragRegion, GameApp.CommonData.GraphDrawingBackColor);
-					foreach (var edge in _edgelines)
+					if (_state != State.StartScreen)
 					{
-						edge.Value.Draw(GameApp.CommonData.Batch);
+						_backButton.Draw(drawer);
+						if (_state < State.NormalShowcase)
+							_submitNodes.Draw(drawer);
 					}
-					for (i = 0; i < _nodeCount; i++)
-					{
-						_nodeButtons[i].Draw(gt);
-					}
-					if (_nodeSel1 != 255 && _nodeSel2 != 255)
-					{
-						if (_weightedbox.IsChecked) _keyboard.Draw(gt);
-						_add_edge.Draw(gt);
-						_cancel_edge.Draw(gt);
-					}
-					_logText.Draw(GameApp.CommonData.Batch);
-					_actionlogText.Draw(GameApp.CommonData.Batch);
-					break;
-				case State.SelectAlgorithm:
-					_selectAlgo.Draw(GameApp.CommonData.Batch);
-					_algoPicker.Draw(gt);
-					if (_algoPicker.Index < 3)
-					{
-						_sourcePicker.Draw(gt);
-						_destPicker.Draw(gt);
-						_select_source.Draw(GameApp.CommonData.Batch);
-						_select_dest.Draw(GameApp.CommonData.Batch);
-					}
-					break;
-				case State.NormalShowcase:
-					GameApp.CommonData.Batch.Draw(GameApp.CommonData.Patch, _graphDragRegion, GameApp.CommonData.GraphDrawingBackColor);
-					_commonGraphShowcase.Draw();
-					goto default;
-				case State.FloydShowcase:
-					GameApp.CommonData.Batch.Draw(GameApp.CommonData.Patch, _graphDragRegion, GameApp.CommonData.GraphDrawingBackColor);
-					_floydWarshallInfo.Draw();
-					goto default;
-				default:
-					_next_update.Draw(gt);
-					_reset_update.Draw(gt);
-					_logText.Draw(GameApp.CommonData.Batch);
-					break;
-			}
-			if (_state != State.StartScreen)
-			{
-				_backButton.Draw(gt);
-				if (_state < State.NormalShowcase)
-					_submitNodes.Draw(gt);
-			}
+				}
+			);
 		}
 		private void ResetAlgo()
 		{
@@ -442,21 +520,28 @@ namespace GTT
 			_currentUpdateIndex = 1;
 			_logText.Text = _commonGraphUpdates[0].UpdateLog;
 			_commonGraphShowcase.Update(_commonGraphUpdates[0]);
-			_next_update.Enabled = true;
+			_next_update.EnabledProperty = true;
 		}
-		private LineObject CreateLine((byte from, byte to) key)
+		private LineObject CreateLine((byte from, byte to) key, CommonDataStruct settings)
 		{
-			LineObject x = new(_movableNodes[key.from].Bounds.Center, _movableNodes[key.to].Bounds.Center, _directedbox.IsChecked, _keyboard.Value.ToString(), 5) { ArrowColor = Color.Yellow };
+			LineObject x = new(
+				settings,
+				_movableNodes[key.from].Bounds.Center, 
+				_movableNodes[key.to].Bounds.Center, 
+				_directedbox.IsChecked, 
+				_keyboard.Value.ToString(), 
+				5
+			) { ArrowColor = Color.Yellow };
 			x.SetLabelColor(Color.White);
 			return x;
 		}
-		private void ResetFloyd()
+		private void ResetFloyd(CommonDataStruct settings)
 		{
 			_lastUpdateIndex = _floydUpdates.Length;
-			_floydWarshallInfo = new FloydWarshallInfo(_edgeMap, _graphDragRegion);
+			_floydWarshallInfo = new FloydWarshallInfo(_edgeMap, _graphDragRegion, settings);
 			_currentUpdateIndex = 1;
 			_logText.Text = _floydUpdates[0].Log;
-			_next_update.Enabled = true;
+			_next_update.EnabledProperty = true;
 		}
 	}
 }

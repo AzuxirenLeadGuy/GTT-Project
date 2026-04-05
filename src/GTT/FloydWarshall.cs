@@ -1,7 +1,4 @@
-using System.Collections.Generic;
-using System.Text;
-
-using Azuxiren.MG;
+using Azuxiren.MG.Drawing;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -11,14 +8,19 @@ namespace GTT
 	public struct FloydWarshallInfo
 	{
 		private readonly TextBox[,] _costMatrix;
-		private readonly SpriteBatch _batch;
 		public string LogText;
 		private readonly byte _nodeCount;
 		private readonly int _ux, _uy, _uw, _uh;
 		private Rectangle _focus;
 		private bool _isFocused;
-		public FloydWarshallInfo(byte[,] edges, Rectangle region)
+		private readonly Texture2D _patch;
+		public FloydWarshallInfo(
+			byte[,] edges,
+			Rectangle region,
+			CommonDataStruct settings
+		)
 		{
+			_patch = settings.Patch;
 			_nodeCount = (byte)edges.GetLength(0);
 			_nodeCount++;
 			_uw = region.Width / _nodeCount;
@@ -34,14 +36,18 @@ namespace GTT
 				for (j = 0, x = _ux - _uw; j <= _nodeCount; j++, x += _uw)
 				{
 					string text = i == 0 && j == 0 ? ""
-						: i == 0 ? GameApp.GetLabel((byte)(j - 1))
-						: j == 0 ? GameApp.GetLabel((byte)(i - 1)) : i == j ? "0"
+						: i == 0 ? Algorithms.GetLabel((byte)(j - 1))
+						: j == 0 ? Algorithms.GetLabel((byte)(i - 1)) : i == j ? "0"
 						: (text = edges[i - 1, j - 1].ToString()) == "0" ? "INF"
 						: text;
-					_costMatrix[i, j] = new(new(x, y, _uw, _uh), text, GameApp.CommonData.Font, Color.White);
+					_costMatrix[i, j] = new(
+						new(x, y, _uw, _uh),
+						text,
+						settings.Font,
+						Color.White
+					);
 				}
 			}
-			_batch = GameApp.CommonData.Batch;
 			LogText = "";
 			_isFocused = false;
 		}
@@ -59,14 +65,14 @@ namespace GTT
 			_focus.Y = _uy + (from * _uh);
 			_costMatrix[from + 1, to + 1].Text = update.DistUpdate.Distance.ToString();
 		}
-		public void Draw()
+		public readonly void Draw(IBatchDrawer batch)
 		{
-			if (_isFocused) _batch.Draw(GameApp.CommonData.Patch, _focus, Color.Red);
+			if (_isFocused) batch.Draw(_patch, _focus, color: Color.Red);
 			for (int i = 0; i <= _nodeCount; i++)
 			{
 				for (int j = 0; j <= _nodeCount; j++)
 				{
-					_costMatrix[i, j].Draw(_batch);
+					_costMatrix[i, j].Draw(batch);
 				}
 			}
 		}

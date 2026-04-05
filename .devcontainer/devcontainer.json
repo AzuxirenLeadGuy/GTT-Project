@@ -1,0 +1,27 @@
+{
+    "name": "MonoGame C# Devcontainer",
+    "dockerFile": "Dockerfile",
+    "context": "..",
+    "runArgs": [
+        "--net=host",
+    ],
+    "remoteEnv": {
+		"DISPLAY": "${localEnv:DISPLAY}",
+		"XDG_RUNTIME_DIR": "${containerEnv:XDG_RUNTIME_DIR}" // <-- THIS!!!
+	},
+    "remoteUser": "root",
+    "containerUser": "root",
+    "settings": {
+		"terminal.integrated.defaultProfile.linux": "zsh",
+	    "dotnet.server.useOmnisharp": true,
+    },
+    "postCreateCommand": "dotnet restore",
+    "extensions": [
+        "nromanov.dotrush",
+        "MindpathTechnologyLimited.code-error-lens",
+    ],
+    "dev.containers.dockerPath": "podman",
+
+    // Use Podman Compose if you need multi-container setups
+    "dev.containers.dockerComposePath": "podman-compose"
+}

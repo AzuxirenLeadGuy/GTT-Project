@@ -1,4 +1,4 @@
-using Azuxiren.MG;
+using Azuxiren.MG.Drawing;
 using Azuxiren.MG.Menu;
 
 using Microsoft.Xna.Framework;
@@ -6,58 +6,36 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace GTT
 {
-	public class Button : AbstractButton, IMenuItem
+	public class Button(CommonDataStruct settings, string message = "", Rectangle? bounds = null, bool circle = false) : BaseButton, IMenuItem
 	{
-		private TextBox _box;
-		private Color _backcolor;
-		private readonly Texture2D _patch;
-		public override bool InputPressed
+		private readonly TextBox _button_text = new(bounds ?? Rectangle.Empty, message, settings.Font, settings.ComponentTextColor);
+		private readonly Texture2D _patch = circle ? settings.Circle : settings.Patch;
+		public override bool Press => Bounds.Contains(_input.PointerLocation) && _input.Clicked;
+		public bool EnabledProperty = true;
+		public override bool Enabled { get => EnabledProperty; }
+		public override BaseButtonState State { get; protected set; }
+		protected internal Rectangle _bounds = bounds ?? Rectangle.Empty;
+		public override Rectangle Bounds => _bounds;
+		protected readonly Color[] _palette = settings.ComponentPalette;
+		protected IInputManager _input = settings.Input;
+
+		public override void Draw(IBatchDrawer drawer)
 		{
-			get => Bounds.Contains(GameApp.CommonData.Input.PointerLocation) && GameApp.CommonData.Input.Clicked;
-			set { }
-		}
-		public override bool Selected
-		{
-			get => Bounds.Contains(GameApp.CommonData.Input.PointerLocation);
-			set { }
-		}
-		public Button(Rectangle bounds, string message = "", bool enableAtStart = true, bool circle = false) : base(bounds, message, enableAtStart)
-		{
-			_box = new TextBox(bounds, message, GameApp.CommonData.Font, Color.White);
-			_patch = circle ? GameApp.CommonData.Circle : GameApp.CommonData.Patch;
-		}
-		public override void Draw(GameTime gt)
-		{
-			switch (State)
+			Color backcolor = State switch
 			{
-				case ComponentState.UnSelected: _backcolor = Color.Black; break;
-				case ComponentState.Press: _backcolor = Color.White; break;
-				case ComponentState.Selected: _backcolor = Color.Silver; break;
-				case ComponentState.Release: _backcolor = Color.Silver; break;
-				case ComponentState.Disabled:
-					_backcolor = Color.DarkRed;
-					break;
-			}
-			GameApp.CommonData.Batch.Draw(_patch, Bounds, _backcolor);
-			_box.Draw(GameApp.CommonData.Batch);
+				BaseButtonState.Released => _palette[0],
+				BaseButtonState.JustPressed => _palette[1],
+				BaseButtonState.Pressed => _palette[2],
+				BaseButtonState.JustReleased => _palette[3],
+				_ => _palette[4],
+			};
+			drawer.Draw(_patch, destination: _bounds, color: backcolor);
+			_button_text.Draw(drawer);
 		}
 		public void Set(Rectangle bds)
 		{
-			Bounds = bds;
-			_box.Bounds = bds;
-		}
-		public bool ClickedOnUpdate(GameTime gt)
-		{
-			if (_state != ComponentState.Selected)
-			{
-				Update(gt);
-				return false;
-			}
-			else
-			{
-				Update(gt);
-				return _state == ComponentState.Press;
-			}
+			_bounds = bds;
+			_button_text.Bounds = bds;
 		}
 	}
 }
