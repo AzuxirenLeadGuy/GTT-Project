@@ -20,13 +20,12 @@ namespace GTT
 		private readonly IInputManager _input;
 		private State _state;
 		public readonly Rectangle Bounds => _textBox.Bounds;
-		private TextBox _textBox;
+		private readonly TextBox _textBox;
 		public Color Color;
 		public MovableObject(
 			MovableObjectManager mgr,
 			string text,
 			Rectangle bds,
-			Color color,
 			Texture2D tex,
 			CommonDataStruct settings
 		)
@@ -34,8 +33,13 @@ namespace GTT
 			_tex = tex;
 			_input = settings.Input;
 			Manager = mgr;
-			_textBox = new TextBox(bds, text, settings.Font, Color.Black);
-			Color = color;
+			_textBox = new TextBox(
+				bds,
+				text,
+				settings.Font,
+				settings.ComponentTextColor
+			);
+			Color = settings.ComponentUnselectedColor;
 			_id = ++Manager.TotalElements;
 			_state = State.Hovering;
 		}
@@ -67,7 +71,7 @@ namespace GTT
 					break;
 			}
 		}
-		public void Place(Point p) => _textBox.Bounds = DrawingExtensions.SetCenter(p, Bounds.Size);
+		public readonly void Place(Point p) => _textBox.Bounds = DrawingExtensions.SetCenter(p, Bounds.Size);
 		public readonly void Draw(IBatchDrawer drawer)
 		{
 			drawer.Draw(_tex, destination: Bounds, color: Color);

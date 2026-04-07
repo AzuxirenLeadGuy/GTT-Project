@@ -35,113 +35,162 @@ namespace GTT
 					Ranks[a]++;
 			}
 		}
-		public readonly static Color[] AllowedColors = [Color.White, Color.LightPink, Color.Cyan, Color.Orange, Color.LimeGreen, Color.Red];
-		public static G_Updates DepthFirstSearch(byte nodeCount, byte[,] edges, byte source, byte dest)
+		public static G_Updates DepthFirstSearch(byte nodeCount, byte[,] edges, byte source, byte dest, Color[] allowedColors)
 		{
 			byte[] color = new byte[nodeCount];
 			byte[] pred = new byte[nodeCount];
-			byte i;
-			for (i = 0; i < nodeCount; i++)
+			int[] cost = new int[nodeCount];
+			for (byte idx = 0; idx < nodeCount; idx++)
 			{
-				color[i] = 0;
-				pred[i] = 255;
+				color[idx] = 0;
+				pred[idx] = 255;
 			}
 			Stack<byte> stack = new();
+			cost[source] = 0;
 			stack.Push(source);
 			do
 			{
 				byte u = stack.Peek();
 				color[u] = 1;
-				yield return new(u, AllowedColors[2], $"Node {GetLabel(u)} is being explored");
+				yield return new(u, allowedColors[2], $"Node {GetLabel(u)} is being explored");
 				if (u == dest)
 				{
-					yield return new(u, AllowedColors[4], $"Node {GetLabel(u)} is found!");
-					int cost = 0;
+					yield return new(u, allowedColors[4], $"Node {GetLabel(u)} is found!");
 					string path = "";
 					while (u != source)
 					{
 						path = $", {GetLabel(u)}" + path;
-						cost += edges[pred[u], u];
 						u = pred[u];
 					}
-					path = $"[ {GetLabel(source)}" + path + " ]";
-					yield return new(255, AllowedColors[0], $"Total Cost={cost} for obtained path:\n{path}");
+					path = $"{GetLabel(source)}{path}";
+					yield return new(255, allowedColors[0], $"Total Cost={cost[dest]} for obtained path:\n{path}");
 					yield break;
 				}
 				else
 				{
-					for (i = 0; i < nodeCount; i++)
+					for (byte idx = 0; idx < nodeCount; idx++)
 					{
-						if (edges[u, i] != 0 && color[i] == 0) // if i is an unvisited neighbour
+						if (edges[u, idx] != 0 && color[idx] == 0) // if i is an unvisited neighbour
 						{
-							pred[i] = u;
-							stack.Push(i);
-							yield return new(i, AllowedColors[1], $"Found neighbour {GetLabel(i)}.");
+							pred[idx] = u;
+							cost[idx] = edges[u, idx] + cost[u];
+							stack.Push(idx);
+							yield return new(
+								idx,
+								allowedColors[1],
+								$"Found neighbour {GetLabel(idx)}, with cost: {cost[idx]}."
+							);
 							goto flp;
 						}
 					}
 					color[u] = 2;
 					stack.Pop();
-					yield return new(u, AllowedColors[3], $"Node {GetLabel(u)} is fully explored!");
+					yield return new(
+						u,
+						allowedColors[3],
+						$"Node {GetLabel(u)} is fully explored!"
+					);
 				flp:;
 				}
 			} while (stack.Count > 0);
-			yield return new(255, AllowedColors[0], $"Destination node cannot be reached");
+			if (dest != 255)
+			{
+				yield return new(
+					255,
+					allowedColors[0],
+					$"Destination node cannot be reached"
+				);
+			}
+			else
+			{
+				string costmap = $"{GetLabel(0)}: {cost[0]}";
+				for (byte idx = 1; idx < nodeCount; idx++)
+				{
+					string cost_str = color[idx] == 0 ? "-" : cost[idx].ToString();
+					costmap += $", {GetLabel(idx)}: {cost_str}";
+				}
+				yield return new(
+					255,
+					allowedColors[4],
+					$"Cost of the entire graph:\n{costmap}"
+				);
+			}
 			yield break;
 		}
-		public static G_Updates BreadthFirstSearch(byte nodeCount, byte[,] edges, byte source, byte dest)
+		public static G_Updates BreadthFirstSearch(byte nodeCount, byte[,] edges, byte source, byte dest, Color[] allowedColors)
 		{
 			byte[] color = new byte[nodeCount];
 			byte[] pred = new byte[nodeCount];
-			byte i;
-			for (i = 0; i < nodeCount; i++)
+			int[] cost = new int[nodeCount];
+			for (byte idx = 0; idx < nodeCount; idx++)
 			{
-				color[i] = 0;
-				pred[i] = 255;
+				color[idx] = 0;
+				pred[idx] = 255;
 			}
 			Queue<byte> queue = new();
 			queue.Enqueue(source);
+			cost[source] = 0;
 			do
 			{
 				byte u = queue.Peek();
 				color[u] = 2;
-				yield return new(u, AllowedColors[2], $"Node {GetLabel(u)} is being explored");
+				yield return new(u, allowedColors[2], $"Node {GetLabel(u)} is being explored");
 				if (u == dest)
 				{
-					yield return new(u, AllowedColors[4], $"Node {GetLabel(u)} is found!");
-					int cost = 0;
+					yield return new(u, allowedColors[4], $"Destination Node {GetLabel(u)} is found!");
 					string path = "";
 					while (u != source)
 					{
-						path = $", {GetLabel(u)}" + path;
-						cost += edges[pred[u], u];
+						path = $", {GetLabel(u)}{path}";
 						u = pred[u];
 					}
-					path = $"[ {GetLabel(source)}" + path + " ]";
-					yield return new(255, AllowedColors[0], $"Total Cost={cost} for obtained path:\n{path}");
+					path = $"{GetLabel(source)}{path}";
+					yield return new(
+						255,
+						allowedColors[0],
+						$"Total Cost={cost[dest]} for obtained path:\n{path}"
+					);
 					yield break;
 				}
 				else
 				{
-					for (i = 0; i < nodeCount; i++)
+					for (byte idx = 0; idx < nodeCount; idx++)
 					{
-						if (edges[u, i] != 0 && color[i] == 0) // if i is an unvisited neighbour
+						if (edges[u, idx] != 0 && color[idx] == 0) // if i is an unvisited neighbour
 						{
-							pred[i] = u;
-							color[i] = 1;
-							queue.Enqueue(i);
-							yield return new(i, AllowedColors[1], $"Found neighbour {GetLabel(i)}.");
+							pred[idx] = u;
+							cost[idx] = edges[u, idx] + cost[u];
+							color[idx] = 1;
+							queue.Enqueue(idx);
+							yield return new(
+								idx,
+								allowedColors[1],
+								$"Found neighbour {GetLabel(idx)} with cost: {cost[idx]}"
+							);
 						}
 					}
 					color[u] = 3;
 					queue.Dequeue();
-					yield return new(u, AllowedColors[3], $"Node {GetLabel(u)} is fully explored!");
+					yield return new(u, allowedColors[3], $"Node {GetLabel(u)} is fully explored!");
 				}
 			} while (queue.Count > 0);
-			yield return new(255, AllowedColors[0], $"Destination node cannot be reached");
+			if (dest != 255)
+			{
+				yield return new(255, allowedColors[0], $"Destination node cannot be reached");
+			}
+			else
+			{
+				string costmap = $"{GetLabel(0)}: {cost[0]}";
+				for (byte idx = 1; idx < nodeCount; idx++)
+				{
+					string cost_str = color[idx] == 0 ? "-" : cost[idx].ToString();
+					costmap += $", {GetLabel(idx)}: {cost_str}";
+				}
+				yield return new(255, allowedColors[4], $"Cost of the entire graph:\n{costmap}");
+			}
 			yield break;
 		}
-		public static G_Updates Dijkstra(byte nodeCount, byte[,] edges, byte source, byte dest)
+		public static G_Updates Dijkstra(byte nodeCount, byte[,] edges, byte source, byte dest, Color[] allowedColors)
 		{
 			byte[] color = new byte[nodeCount];
 			byte[] pred = new byte[nodeCount];
@@ -161,10 +210,10 @@ namespace GTT
 				byte u = queue.Dequeue();
 				if (color[u] >= 2) continue;
 				color[u] = 2;
-				yield return new(u, AllowedColors[2], $"Now exporing node {GetLabel(u)}");
+				yield return new(u, allowedColors[2], $"Now exporing node {GetLabel(u)}");
 				if (u == dest)
 				{
-					yield return new(u, AllowedColors[4], $"Node {GetLabel(u)} is found.");
+					yield return new(u, allowedColors[4], $"Node {GetLabel(u)} is found.");
 					string path = "";
 					while (u != source)
 					{
@@ -172,7 +221,7 @@ namespace GTT
 						u = pred[u];
 					}
 					path = $"[ {GetLabel(source)}" + path + " ]";
-					yield return new(255, AllowedColors[0], $"Cost is {cost[dest]} of Path \n{path} ");
+					yield return new(255, allowedColors[0], $"Cost is {cost[dest]} of Path \n{path} ");
 					queue.Clear();
 					yield break;
 				}
@@ -185,7 +234,7 @@ namespace GTT
 							if (cost[i] == -1 || edges[u, i] + cost[u] < cost[i]) // This path is better than already explored
 							{
 								cost[i] = edges[u, i] + cost[u];
-								yield return new(i, AllowedColors[1], $"Found{(color[i] == 0 ? " " : " a better ")}path to neighbour {GetLabel(i)} with cost {cost[i]}");
+								yield return new(i, allowedColors[1], $"Found{(color[i] == 0 ? " " : " a better ")}path to neighbour {GetLabel(i)} with cost {cost[i]}");
 								if (color[i] == 0)
 									queue.Enqueue(i, cost[i]);
 								else
@@ -194,17 +243,22 @@ namespace GTT
 							}
 						}
 					}
-					yield return new(u, AllowedColors[3], $"Node {GetLabel(u)} is completely expored");
+					yield return new(u, allowedColors[3], $"Node {GetLabel(u)} is completely expored");
 				}
 			} while (queue.Count > 0);
-			yield return new(255, AllowedColors[0], "The destination cannot be reached");
-			string x = $"[ {(cost[0] == -1 ? "INF" : cost[0].ToString())}";
-			for (i = 1; i < nodeCount; i++) x += $", {(cost[i] == -1 ? "INF" : cost[i].ToString())}";
-			x += " ]";
-			yield return new(255, AllowedColors[0], $"The cost vector is \n{x}");
+			if (dest != 255)
+			{
+				yield return new(255, allowedColors[0], $"Destination node cannot be reached");
+			}
+			string x = $" {GetLabel(0)}:{(cost[0] == -1 ? "INF" : cost[0].ToString())}";
+			for (i = 1; i < nodeCount; i++)
+			{
+				x += $", {GetLabel(i)}:{(cost[i] == -1 ? "INF" : cost[i].ToString())}";
+			}
+			yield return new(255, allowedColors[0], $"The cost vector is \n{x} ");
 			yield break;
 		}
-		public static G_Updates Kruskal(byte nodeCount, byte[,] edges)
+		public static G_Updates Kruskal(byte nodeCount, byte[,] edges, Color[] allowedColors)
 		{
 			DisjointSet sets = new(nodeCount);
 			SortedSet<(byte Weight, byte From, byte To)> edgeSet = [];
@@ -217,29 +271,29 @@ namespace GTT
 					if (edges[i, j] > 0) edgeSet.Add((edges[i, j], i, j));
 				}
 			}
-			yield return new(255, AllowedColors[0], "Going through all edges in increasing order of weights");
+			yield return new(255, allowedColors[0], "Going through all edges in increasing order of weights");
 			i = 0;
 			int cost = 0;
 			foreach (var (weight, from, to) in edgeSet)
 			{
 				string text = $"({GetLabel(from)},{GetLabel(to)})";
-				yield return new GraphDrawingUpdate(from, to, AllowedColors[2], $"Checking edge {text} ...");
+				yield return new GraphDrawingUpdate(from, to, allowedColors[2], $"Checking edge {text} ...");
 				if (sets.AreMerged(from, to))
-					yield return new(from, to, AllowedColors[5], $"Adding this edge will introduce a cycle\nEdge {text} is discarded");
+					yield return new(from, to, allowedColors[5], $"Adding this edge will introduce a cycle\nEdge {text} is discarded");
 				else
 				{
-					yield return new(from, to, AllowedColors[4], $"This edge can be included in the MST.\n Edge {text} is included");
+					yield return new(from, to, allowedColors[4], $"This edge can be included in the MST.\n Edge {text} is included");
 					cost += weight;
 					i++;
 					sets.Merge(from, to);
 				}
 				if (i == nodeCount)
 				{
-					yield return new(255, AllowedColors[4], $"MST of cost {cost} is formed with the edges marked with green color");
+					yield return new(255, allowedColors[4], $"MST of cost {cost} is formed with the edges marked with green color");
 					yield break;
 				}
 			}
-			yield return new(255, AllowedColors[0], $"Cannot select {nodeCount} edges to make a MST\nThe graph is not connected");
+			yield return new(255, allowedColors[0], $"Cannot select {nodeCount} edges to make a MST\nThe graph is not connected");
 			yield break;
 		}
 		public static F_Updates FloydWarshall(byte nodeCount, byte[,] edges)
