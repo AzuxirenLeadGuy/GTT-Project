@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 
-using Azuxiren.MG;
 using Azuxiren.MG.Drawing;
 
 using Microsoft.Xna.Framework;
@@ -13,6 +12,7 @@ namespace GTT
 		public (TextBox Box, Color color)[] Nodes;
 		public Dictionary<(byte From, byte To), LineObject> Edges;
 		private readonly Texture2D _patch;
+		private Color _base, _node, _arrow;
 		public string Log;
 		public GraphDrawing(
 			Rectangle[] pos,
@@ -26,13 +26,16 @@ namespace GTT
 					pos[i],
 					Algorithms.GetLabel((byte)i),
 					settings.Font,
-					Color.Black
+					settings.ComponentTextColor
 				),
-				Color.White
+				settings.ComponentUnselectedColor
 			);
 			Edges = edges;
 			_patch = settings.Circle;
 			Log = "";
+			_base = settings.GDBaseColor;
+			_arrow = settings.GDArrowColor;
+			_node = settings.GDNodeColor;
 		}
 		public readonly void Draw(IBatchDrawer batch)
 		{
@@ -50,12 +53,12 @@ namespace GTT
 		{
 			for (int i = Nodes.Length - 1; i >= 0; i--)
 			{
-				Nodes[i].color = Color.White;
-				Nodes[i].Box.TextColor = Color.Black;
+				Nodes[i].color = _base;
+				Nodes[i].Box.TextColor = _node;
 			}
 			foreach (var edge in Edges)
 			{
-				edge.Value.ArrowColor = Color.Yellow;
+				edge.Value.ArrowColor = _arrow;
 			}
 		}
 		public void Update(GraphDrawingUpdate update)

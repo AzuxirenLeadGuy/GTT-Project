@@ -12,7 +12,7 @@ namespace GTT
 		static void Main()
 		{
 			using var game = new AzuxirenMonogameClass<CommonDataStruct>(
-				new Point(1000, 600),
+				new Point(1024, 768),
 				new StageFactory()
 			);
 			game.Run();

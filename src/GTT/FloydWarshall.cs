@@ -9,6 +9,7 @@ namespace GTT
 	{
 		private readonly TextBox[,] _costMatrix;
 		public string LogText;
+		private Color _focusColor;
 		private readonly byte _nodeCount;
 		private readonly int _ux, _uy, _uw, _uh;
 		private Rectangle _focus;
@@ -20,6 +21,7 @@ namespace GTT
 			CommonDataStruct settings
 		)
 		{
+			_focusColor = settings.ComponentHoverColor;
 			_patch = settings.Patch;
 			_nodeCount = (byte)edges.GetLength(0);
 			_nodeCount++;
@@ -38,13 +40,13 @@ namespace GTT
 					string text = i == 0 && j == 0 ? ""
 						: i == 0 ? Algorithms.GetLabel((byte)(j - 1))
 						: j == 0 ? Algorithms.GetLabel((byte)(i - 1)) : i == j ? "0"
-						: (text = edges[i - 1, j - 1].ToString()) == "0" ? "INF"
+						: (text = edges[i - 1, j - 1].ToString()) == "0" ? "-"
 						: text;
 					_costMatrix[i, j] = new(
 						new(x, y, _uw, _uh),
 						text,
 						settings.Font,
-						Color.White
+						settings.ComponentTextColor
 					);
 				}
 			}
@@ -67,7 +69,7 @@ namespace GTT
 		}
 		public readonly void Draw(IBatchDrawer batch)
 		{
-			if (_isFocused) batch.Draw(_patch, _focus, color: Color.Red);
+			if (_isFocused) batch.Draw(_patch, _focus, color: _focusColor);
 			for (int i = 0; i <= _nodeCount; i++)
 			{
 				for (int j = 0; j <= _nodeCount; j++)

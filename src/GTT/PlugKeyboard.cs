@@ -5,7 +5,7 @@ namespace GTT
 {
 	public class PlugKeyboard : IMenuItem
 	{
-		private TextBox _box;
+		private readonly TextBox _box;
 		private readonly Button[] _numericPads;
 		private int _value;
 		public int Value { get => _value; set => _box.Text = (_value = value).ToString(); }
@@ -18,7 +18,13 @@ namespace GTT
 			}
 			_numericPads[10] = new Button(settings, "Clear");
 			_value = defaultValue;
-			_box = new TextBox(Rectangle.Empty, _value.ToString(), settings.Font, Color.Black);
+			_box = new TextBox(
+				Rectangle.Empty,
+				_value.ToString(),
+				settings.Font,
+				settings.ComponentTextColor,
+				TextBox.TextAlignment.Right
+			);
 			Set(bds);
 		}
 		public void Set(Rectangle bds)
@@ -48,13 +54,13 @@ namespace GTT
 			bool change = false;
 			for (int i = 0; i < 10; i++)
 			{
-				if (_numericPads[i].Update(gt) == Azuxiren.MG.Menu.BaseButton.BaseButtonState.JustReleased)
+				if (_numericPads[i].Update(gt) == Azuxiren.MG.Menu.BaseButton.BaseButtonState.JustPressed)
 				{
 					_value = (_value * 10) + i;
 					change = true;
 				}
 			}
-			if (_numericPads[10].Update(gt) == Azuxiren.MG.Menu.BaseButton.BaseButtonState.JustReleased)
+			if (_numericPads[10].Update(gt) == Azuxiren.MG.Menu.BaseButton.BaseButtonState.JustPressed)
 			{
 				_value = 0;
 				change = true;
